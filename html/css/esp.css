@@ -1,0 +1,32 @@
+body  {
+	text-align: center;
+	min-width: 840px;
+}
+legend.add, fieldset.add {
+    background-color: lightgreen
+}
+
+p.error {color:red;font-weight:bold}
+p.info {font-weight:bold}
+tr.error {background-color:red}
+tr.warning {background-color:pink}
+td.money {text-align:right}
+input.money {text-align:right}
+div.mainbody {
+    border:5px solid darkblue;
+    padding: 10px;
+    float: left;
+    background-color:lightblue;
+    text-align: left;
+}
+div.navibar {text-align: left}
+div.addthing {
+    background-color:lightgreen;
+    border: 2px groove darkgreen;
+    margin: 2px;
+}
+table.listthings {
+    background-color: orange;
+    border: 2px groove darkorange;
+    margin:20px;
+}

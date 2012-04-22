@@ -1,0 +1,33 @@
+<HTML>
+<HEAD>
+<TITLE>
+ESP: Easy Stock Program
+</TITLE>
+<link rel="stylesheet" href="/css/esp.css" type="text/css">
+<script src="/js/utils.js"></script>
+<script src="/js/sorttable.js"></script>
+<script src="/js/index.js"></script>
+</HEAD>
+<BODY>
+<div class="mainbody">
+<h1>
+ESP: Easy Stock Program
+</h1>
+<form id="login">
+<fieldset class="login">
+<legend class="login">Login:</legend>
+<label>Database:<input type="text" id="database" size="40"></label><br />
+<label>Username:<input type="text" id="username" size="40"></label><br />
+<label>Password:<input type="password" id="password" size="40"></label><br />
+<input type="button" id="loginButton" value="Login">
+</fieldset>
+</form>
+<p id="loggedInMessage">Not logged in
+<input type="button" id="logoutButton" value="Logout" disabled="disabled">
+</p>
+<input type="button" id="locationsButton" disabled="disabled" value="Locations">
+<input type="button" id="adminButton" disabled="disabled" value="Admin">
+<input type="button" id="changeMyPasswordButton" disabled="disabled" value="Change Password">
+
+</BODY>
+</HTML>

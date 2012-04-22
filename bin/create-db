@@ -1,0 +1,33 @@
+#!/bin/sh
+
+databaseName=$1
+directory=$2
+
+echo $databaseName >> /var/esp/config
+echo $directory >> /var/esp/config
+
+mkdir -p $directory
+
+sqlite3 $directory/db <<!
+CREATE TABLE location (
+    locationId INTEGER PRIMARY KEY,
+    locationName VARCHAR NOT NULL UNIQUE,
+    locationObsolete ENUM(0,1) DEFAULT 0
+);
+CREATE TABLE user (
+    userId INTEGER PRIMARY KEY,
+    userName VARCHAR NOT NULL UNIQUE,
+    userPassword VARCHAR NOT NULL,
+    userObsolete NOT NULL DEFAULT 0,
+    userType NOT NULL DEFAULT 1
+);
+INSERT INTO user (userName,userPassword,userType) VALUES ('admin','changeme',2);
+!
+
+# userType is..
+# 0 = readonly
+# 1 = normal
+# 2 = admin
+
+chown apache:apache $directory
+chown apache:apache $directory/db

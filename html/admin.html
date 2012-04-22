@@ -1,0 +1,40 @@
+<HTML>
+<HEAD>
+<TITLE>
+ESP: Admin
+</TITLE>
+<link rel="stylesheet" href="/css/esp.css" type="text/css">
+<script src="/js/utils.js"></script>
+<script src="/js/sorttable.js"></script>
+<script src="/js/admin.js"></script>
+</HEAD>
+<BODY>
+<div class="mainbody">
+<h1>
+ESP: Admin
+</h1>
+<form id="addUser">
+<fieldset class="add">
+<legend class="add">New User</legend>
+<label>Username:<input type="text" id="userNameText" size="40"></label><br />
+<label>Password:<input type="password" id="userPasswordText" size="40"></label><br />
+<label>Re-enter:<input type="password" id="userPasswordText2" size="40"></label><br />
+<select id="userTypeSelect">
+<option value="2">admin</value>
+<option value="1" selected="true">normal</value>
+<option value="0">readonly</value>
+</select><br />
+<input type="button" id="addUserSubmit" value="Add user">
+</fieldset>
+</form>
+<table border=1 id="usersTable" class="listthings sortable">
+<thead>
+<tr><th id="userNameHeader">Username</th><th class="sorttable_nosort">Type</th><th class="sorttable_nosort">Disabled</th><th class="sorttable_nosort"></th></tr>
+</thead>
+<tbody>
+</tbody>
+</table>
+</div>
+
+</BODY>
+</HTML>
