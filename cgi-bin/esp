@@ -43,12 +43,17 @@ eval {
 
     # Got the database, now find the directory that the database and lock file are stored in
     my $dir = $config{$database};
-    if (-f "$dir/BACKUP") {
-	push @returns, [ 'alert', "Database \"$database\" is locked for backups - please try again later" ];
-	return;
-    }
+
     if (-f "$dir/LOCKED") {
-	push @returns, [ 'alert', "Database \"$database\" is locked right now - please try again later" ];
+	my $message;
+	if (open F, "$dir/LOCKED") {
+	    $message = <F>;
+	    close F;
+	} else {
+	    $message = 'Database is locked';
+	}
+
+	push @returns, [ 'error', "Database \"$database\" cannot be used: $message" ];
 	return;
     }
 
@@ -60,33 +65,35 @@ eval {
 
     my ($actualPassword,$type,$hidden) = $dbh->selectrow_array("SELECT userPassword,userType,userHidden FROM user WHERE userName = ?",undef,$username);
     
-    if (!$actualPassword || $password ne $actualPassword) {
-	push @returns, [ 'alert', "Username or password is wrong" ];
+    if ($hidden) {
+	push @returns, [ 'error', "User $username is currently not allowed to use the system" ];
 	return;
     }
 
-    if ($hidden) {
-	push @returns, [ 'alert', "User $username is currently not allowed to use the system" ];
+    if (!$actualPassword || $password ne $actualPassword) {
+	push @returns, [ 'error', "Username or password is wrong" ];
 	return;
     }
 
     if ($command eq 'login') {
 	push @returns, [ 'login',$type ];
+	push @returns, [ 'success' ];
 
     } elsif ($command eq 'addLocation') {
 	my $locationName = $query->param('locationName');
 	my ($count) = $dbh->selectrow_array("SELECT COUNT(*) FROM location WHERE locationName = ?",undef,$locationName);
 	if ($count > 0) {
-	    push @returns, [ 'alert', "Location $locationName already exists\n" ];
+	    push @returns, [ 'error', "Location $locationName already exists\n" ];
 	} else {
 	    $dbh->do("INSERT INTO location (locationName) VALUES (?)",undef,$locationName);
 	    my $locationId = $dbh->last_insert_id(undef,undef,undef,undef);
 	    $dbh->commit;
 	    push @returns, [ 'location', $locationId, $locationName, 0 ];
+	    push @returns, [ 'success' ];
 	}
 
     } elsif ($command eq 'addUser') {
-	if ($type < ADMIN) { push @returns, ['alert','Must be an administrator to do this']; return }
+	if ($type < ADMIN) { push @returns, ['error','Must be an administrator to do this']; return }
 
 	my $userName = $query->param('newName');
 	my $userPassword = $query->param('newPassword');
@@ -94,12 +101,13 @@ eval {
 
 	my ($count) = $dbh->selectrow_array("SELECT COUNT(*) FROM user WHERE userName = ?",undef,$userName);
 	if ($count > 0) {
-	    push @returns, [ 'alert', "User $userName already exists\n" ];
+	    push @returns, [ 'error', "User $userName already exists\n" ];
 	} else {
 	    $dbh->do("INSERT INTO user (userName,userPassword,userType) VALUES (?,?,?)",undef,$userName,$userPassword,$userType);
 	    my $userId = $dbh->last_insert_id(undef,undef,undef,undef);
 	    $dbh->commit;
 	    push @returns, [ 'user', $userId, $userName,$userType,0 ];
+	    push @returns, [ 'success' ];
 	}
 
     } elsif ($command eq 'hiddenLocation') {
@@ -111,9 +119,10 @@ eval {
 	$dbh->do("UPDATE location SET locationHidden = ? WHERE locationId = ?",undef,$locationHidden,$locationId);
 	$dbh->commit;
 	push @returns, [ 'locationHidden', $locationId, $locationHidden ];
+	push @returns, [ 'success' ];
 
     } elsif ($command eq 'hiddenUser') {
-	if ($type < ADMIN) { push @returns, ['alert','Must be an administrator to do this']; return }
+	if ($type < ADMIN) { push @returns, ['error','Must be an administrator to do this']; return }
 
 	my $userId = $query->param('userId');
 	my $sth = $dbh->prepare("SELECT userHidden FROM user WHERE userId = ?",undef);
@@ -123,15 +132,17 @@ eval {
 	$dbh->do("UPDATE user SET userHidden = ? WHERE userId = ?",undef,$userHidden,$userId);
 	$dbh->commit;
 	push @returns, [ 'userHidden', $userId, $userHidden ];
+	push @returns, [ 'success' ];
 
     } elsif ($command eq 'userType') {
-	if ($type < ADMIN) { push @returns, ['alert','Must be an administrator to do this']; return }
+	if ($type < ADMIN) { push @returns, ['error','Must be an administrator to do this']; return }
 
 	my $userId = $query->param('userId');
 	my $userType = $query->param('userType');
 	$dbh->do("UPDATE user SET userType = ? WHERE userId = ?",undef,$userType,$userId);
 	$dbh->commit;
 	push @returns, [ 'userType', $userId, $userType ];
+	push @returns, [ 'success' ];
 
     } elsif ($command eq 'changeLocationName') {
 	my $locationId = $query->param('locationId');
@@ -140,16 +151,17 @@ eval {
 	my ($count) = $dbh->selectrow_array("SELECT COUNT(*) FROM location WHERE locationName = ?",undef,$newName);
 	if ($count > 0) {
 	    my ($oldName) = $dbh->selectrow_array("SELECT locationName FROM location WHERE locationId = ?",undef,$locationId);
-	    push @returns, [ 'alert', "Location $newName already exists\n" ];
 	    push @returns, [ 'locationName', $locationId, $oldName ];
+	    push @returns, [ 'error', "Location $newName already exists\n" ];
 	} else {
 	    $dbh->do("UPDATE location SET locationName = ? WHERE locationId = ?",undef,$newName,$locationId);
 	    $dbh->commit;
 	    push @returns, [ 'locationName', $locationId, $newName ];
+	    push @returns, [ 'success' ];
 	}
 
     } elsif ($command eq 'changeUserName') {
-	if ($type < ADMIN) { push @returns, ['alert','Must be an administrator to do this']; return }
+	if ($type < ADMIN) { push @returns, ['error','Must be an administrator to do this']; return }
 
 	my $userId = $query->param('userId');
 	my $newName = $query->param('newName');
@@ -157,12 +169,13 @@ eval {
 	my ($count) = $dbh->selectrow_array("SELECT COUNT(*) FROM user WHERE userName = ?",undef,$newName);
 	if ($count > 0) {
 	    my ($oldName) = $dbh->selectrow_array("SELECT userName FROM user WHERE userId = ?",undef,$userId);
-	    push @returns, [ 'alert', "User $newName already exists\n" ];
 	    push @returns, [ 'userName', $userId, $oldName ];
+	    push @returns, [ 'error', "User $newName already exists\n" ];
 	} else {
 	    $dbh->do("UPDATE user SET userName = ? WHERE userId = ?",undef,$newName,$userId);
 	    $dbh->commit;
 	    push @returns, [ 'userName', $userId, $newName ];
+	    push @returns, [ 'success' ];
 	}
 
     } elsif ($command eq 'getLocations') {
@@ -172,11 +185,13 @@ eval {
 	    push @returns, [ 'location', @a ];
 	}
 	if ($sth->err) {
-	    push @returns, [ 'alert', $sth->err ];
+	    push @returns, [ 'error', $sth->err ];
+	} else {
+	    push @returns, [ 'success' ];
 	}
 
     } elsif ($command eq 'getUsers') {
-	if ($type < ADMIN) { push @returns, ['alert','Must be an administrator to do this']; return }
+	if ($type < ADMIN) { push @returns, ['error','Must be an administrator to do this']; return }
 
 	my $sth = $dbh->prepare("SELECT userId,userName,userType,userHidden FROM user ORDER BY userName DESC");
 	$sth->execute;
@@ -184,7 +199,9 @@ eval {
 	    push @returns, [ 'user', @a ];
 	}
 	if ($sth->err) {
-	    push @returns, [ 'alert', $sth->err ];
+	    push @returns, [ 'error', $sth->err ];
+	} else {
+	    push @returns, [ 'success' ];
 	}
 
     } elsif ($command eq 'changeMyPassword') {
@@ -192,16 +209,17 @@ eval {
 	my $newPassword = $query->param('newPassword');
 
 	if ($oldPassword ne $password) {
-	    push @returns, [ 'alert', "Password is wrong" ];
+	    push @returns, [ 'error', "Password is wrong" ];
 	    return;
 	}
 	$dbh->do("UPDATE user SET userPassword = ? WHERE userName = ?",undef,$newPassword,$username);
 	$dbh->commit();
 	push @returns, [ 'changeMyPassword', $newPassword ];
+	push @returns, [ 'success' ];
 
     } elsif ($command eq 'changePassword') {
 	if ($type < ADMIN) {
-	    push @returns, [ 'alert', "Must be an administrator to do this" ];
+	    push @returns, [ 'error', "Must be an administrator to do this" ];
 	    return;
 	}
 	my $changeUserId = $query->param('changeUserId');
@@ -209,13 +227,14 @@ eval {
 	$dbh->do("UPDATE user SET userPassword = ? WHERE userId = ?",undef,$newPassword,$changeUserId);
 	$dbh->commit();
 	push @returns, [ 'changePassword' ];
+	push @returns, [ 'success' ];
 
     } else {
-	push @returns, [ 'alert', "ESP api: unknown request: $command" ];
+	push @returns, [ 'error', "ESP api: unknown request: $command" ];
     }
 };
 if ($@) {
-    push @returns, [ 'alert', $@ ];
+    push @returns, [ 'error', $@ ];
 }
 
 $dbh->disconnect;

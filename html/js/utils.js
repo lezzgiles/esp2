@@ -336,11 +336,12 @@ HTTP.get = function(url,callback,options) {
 
 ////////////////////////////////////////////////////
 
-// Takes two extra optional arguments:
-// if one extra - it is a function that is always called after completion
-// if two extra - the first is called after successful completion, the second is always called
-function doit (command, parameters) {
-    var handler;
+// Takes an optional argument, a dictionary of functions:
+// key success - called if successful
+// key error - called if error
+
+function doit (command,parameters) {
+
     if (window.opener) {
 	database = window.opener.database;
 	username = window.opener.username;
@@ -351,25 +352,23 @@ function doit (command, parameters) {
     parameters['database'] = database;
     parameters['username'] = username;
     parameters['password'] = password;
-	
+
+    var myHandler;
+
     if (arguments.length == 3) {
-	handler = function(results) {
-	    handleResults(results);
-	    arguments[2]();
-	}
-    
-    } else if (arguments.length == 4) {
-	handler = function(results) {
+	var handlerFuncs = arguments[2];
+	myHandler = function(results) {
 	    if (handleResults(results)) {
-		arguments[2]();
+		if ('success' in handlerFuncs) { handlerFuncs.success(); }
+	    } else {
+		if ('error' in handlerFuncs) { handlerFuncs.error(); }
 	    }
-	    arguments[3]();
-	}
+	};
     } else {
-	handler = handleResults;
+	myHandler = handleResults;
     }
 
-    HTTP.get("/esp-cgi/esp",handleResults,{parameters:parameters});
+    HTTP.get("/esp-cgi/esp",myHandler,{parameters:parameters});
 }
 
 handle = {};
@@ -379,17 +378,22 @@ function handleResults(results) {
 	alert("Request failed for an unknown reason");
 	return false;
     }
+    var retval
     results = eval(results);
     forEach (results, function(result) {
-	    command = result.shift();
-	    if (command == 'alert') {
+	    var command = result.shift();
+	    if (command == 'error') {
 		alert(result[0]);
+		retval = false;
+	    } else if (command == 'success') {
+		retval = true;
 	    } else if (command in handle) {
 		handle[command].apply(null,result);
 	    } else {
 		alert("Internal error - got unexpected response "+command);
 	    }
 	});
+    return retval;
 }
 
 function blurOnReturnKey(evt) {

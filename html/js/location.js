@@ -5,10 +5,15 @@ function clickSubmitAdd() {
     if (locationName == "") {
 	alert("You must enter a name for the new location");
     } else {
-	doit('addLocation',{locationName:locationName},
-	     function() { document.getElementById('locationName').value = ""; },
-	     function() { document.getElementById('locationName').focus(); }
-	    );
+	doit('addLocation',{locationName:locationName}, {
+	    success:function() {
+	        document.getElementById('locationName').value = "";
+	        document.getElementById('locationName').focus();
+	    },
+	    error:function() {
+                document.getElementById('locationName').focus();
+            },
+	});
     }
 }
 
