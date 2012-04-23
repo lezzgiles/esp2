@@ -16,8 +16,8 @@ my $query = CGI->new;
 my @returns;
 my $dbh;
 
-#my $trace = 0;
-my $trace = 1;
+my $trace = 0;
+#my $trace = 1;
 
 if ($trace) {
     foreach my $param ($query->param()) {
@@ -58,14 +58,14 @@ eval {
 	RaiseError=>1,
 		       });
 
-    my ($actualPassword,$type,$obsolete) = $dbh->selectrow_array("SELECT userPassword,userType,userObsolete FROM user WHERE userName = ?",undef,$username);
+    my ($actualPassword,$type,$hidden) = $dbh->selectrow_array("SELECT userPassword,userType,userHidden FROM user WHERE userName = ?",undef,$username);
     
     if (!$actualPassword || $password ne $actualPassword) {
 	push @returns, [ 'alert', "Username or password is wrong" ];
 	return;
     }
 
-    if ($obsolete) {
+    if ($hidden) {
 	push @returns, [ 'alert', "User $username is currently not allowed to use the system" ];
 	return;
     }
@@ -102,27 +102,27 @@ eval {
 	    push @returns, [ 'user', $userId, $userName,$userType,0 ];
 	}
 
-    } elsif ($command eq 'obsoleteLocation') {
+    } elsif ($command eq 'hiddenLocation') {
 	my $locationId = $query->param('locationId');
-	my $sth = $dbh->prepare("SELECT locationObsolete FROM location WHERE locationId = ?",undef);
+	my $sth = $dbh->prepare("SELECT locationHidden FROM location WHERE locationId = ?",undef);
 	$sth->execute($locationId);
-	my ($locationObsolete) = $sth->fetchrow_array;
-	$locationObsolete = !$locationObsolete;
-	$dbh->do("UPDATE location SET locationObsolete = ? WHERE locationId = ?",undef,$locationObsolete,$locationId);
+	my ($locationHidden) = $sth->fetchrow_array;
+	$locationHidden = !$locationHidden;
+	$dbh->do("UPDATE location SET locationHidden = ? WHERE locationId = ?",undef,$locationHidden,$locationId);
 	$dbh->commit;
-	push @returns, [ 'locationObsolete', $locationId, $locationObsolete ];
+	push @returns, [ 'locationHidden', $locationId, $locationHidden ];
 
-    } elsif ($command eq 'obsoleteUser') {
+    } elsif ($command eq 'hiddenUser') {
 	if ($type < ADMIN) { push @returns, ['alert','Must be an administrator to do this']; return }
 
 	my $userId = $query->param('userId');
-	my $sth = $dbh->prepare("SELECT userObsolete FROM user WHERE userId = ?",undef);
+	my $sth = $dbh->prepare("SELECT userHidden FROM user WHERE userId = ?",undef);
 	$sth->execute($userId);
-	my ($userObsolete) = $sth->fetchrow_array;
-	$userObsolete = !$userObsolete;
-	$dbh->do("UPDATE user SET userObsolete = ? WHERE userId = ?",undef,$userObsolete,$userId);
+	my ($userHidden) = $sth->fetchrow_array;
+	$userHidden = !$userHidden;
+	$dbh->do("UPDATE user SET userHidden = ? WHERE userId = ?",undef,$userHidden,$userId);
 	$dbh->commit;
-	push @returns, [ 'userObsolete', $userId, $userObsolete ];
+	push @returns, [ 'userHidden', $userId, $userHidden ];
 
     } elsif ($command eq 'userType') {
 	if ($type < ADMIN) { push @returns, ['alert','Must be an administrator to do this']; return }
@@ -166,7 +166,7 @@ eval {
 	}
 
     } elsif ($command eq 'getLocations') {
-	my $sth = $dbh->prepare("SELECT locationId,locationName,locationObsolete FROM location ORDER BY locationName DESC");
+	my $sth = $dbh->prepare("SELECT locationId,locationName,locationHidden FROM location ORDER BY locationName DESC");
 	$sth->execute;
 	while (my @a = $sth->fetchrow_array) {
 	    push @returns, [ 'location', @a ];
@@ -178,7 +178,7 @@ eval {
     } elsif ($command eq 'getUsers') {
 	if ($type < ADMIN) { push @returns, ['alert','Must be an administrator to do this']; return }
 
-	my $sth = $dbh->prepare("SELECT userId,userName,userType,userObsolete FROM user ORDER BY userName DESC");
+	my $sth = $dbh->prepare("SELECT userId,userName,userType,userHidden FROM user ORDER BY userName DESC");
 	$sth->execute;
 	while (my @a = $sth->fetchrow_array) {
 	    push @returns, [ 'user', @a ];

@@ -369,7 +369,33 @@ function doit (command, parameters) {
 	handler = handleResults;
     }
 
-    HTTP.get("/cgi-bin/esp",handleResults,{parameters:parameters});
+    HTTP.get("/esp-cgi/esp",handleResults,{parameters:parameters});
+}
+
+handle = {};
+
+function handleResults(results) {
+    if (results == null) {
+	alert("Request failed for an unknown reason");
+	return false;
+    }
+    results = eval(results);
+    forEach (results, function(result) {
+	    command = result.shift();
+	    if (command == 'alert') {
+		alert(result[0]);
+	    } else if (command in handle) {
+		handle[command].apply(null,result);
+	    } else {
+		alert("Internal error - got unexpected response "+command);
+	    }
+	});
+}
+
+function blurOnReturnKey(evt) {
+   var evt = (evt) ? evt : ((event) ? event : null);
+   var node = (evt.target) ? evt.target : ((evt.srcElement) ? evt.srcElement : null);
+    if (evt.keyCode == 13) { node.blur(); return false;}
 }
 
 
