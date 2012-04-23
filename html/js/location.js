@@ -55,8 +55,6 @@ function hiddenCheckboxClick(id) { return function() {
 }
 
 handle.locationHidden = function(locationId,locationHidden) {
-    var locationId = result[1];
-    var locationHidden = result[2];
     document.getElementById('hiddenCheckbox'+locationId).checked = (locationHidden == 1);
 }
 
@@ -79,10 +77,28 @@ handle.locationName = function(locationId,newName) {
     clearSorted(document.getElementById('locationNameHeader'));
 }
 
+function showHidden() {
+    var showHidden = document.getElementById('showHiddenCheckbox').checked;
+
+    var tbody = document.getElementById('locationsTable').tBodies[0];
+    forEach (tbody.rows, function(tr) {
+	if (showHidden) {
+	    tr.style.display = 'table-row';
+	} else {
+	    if (tr.childNodes[1].childNodes[0].checked == true) {
+		tr.style.display = 'none';
+	    } else {
+		tr.style.display = 'table-row';
+	    }
+	}
+    });
+}
+
 // Set up the page after the html is fully loaded
 window.onload = function () {
     document.getElementById('locationName').onchange = clickSubmitAdd;
     document.getElementById('locationName').onkeyup = blurOnReturnKey;
+    document.getElementById('showHiddenCheckbox').onchange = showHidden;
     doit("getLocations",{});
 }
 
