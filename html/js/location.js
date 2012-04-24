@@ -22,10 +22,14 @@ handle.location = function(locationId,locationName,locationHidden) {
     var tbody = locationsTable.tBodies[0];
     var tr = document.createElement('tr');
 
+    // Location name textbox
     var nameTd = document.createElement('td');
     var locationNameText = document.createElement('input');
     locationNameText.type = 'text';
     locationNameText.value = locationName;
+    if (window.opener.userType == 0) {
+	locationNameText.disabled = true;
+    }
     locationNameText.id = 'locationNameText'+locationId;
     locationNameText.onkeyup = blurOnReturnKey;
     locationNameText.onchange = changeLocationName(locationId,locationNameText);
@@ -33,6 +37,7 @@ handle.location = function(locationId,locationName,locationHidden) {
     nameTd.setAttribute('sorttable_customkey', locationName);
     tr.appendChild(nameTd);
 
+    // Hide location checkbox
     var hiddenTd = document.createElement('td');
     var hiddenCheckbox = document.createElement('input');
     hiddenCheckbox.type = 'checkbox';
@@ -40,6 +45,9 @@ handle.location = function(locationId,locationName,locationHidden) {
     if (locationHidden == 1) {
 	hiddenCheckbox.checked = true;
 	tr.style.display = 'none';
+    }
+    if (window.opener.userType == 0) {
+	hiddenCheckbox.disabled = true;
     }
     hiddenCheckbox.id = 'hiddenCheckbox'+locationId;
     hiddenCheckbox.onclick = hiddenCheckboxClick(locationId);
@@ -90,6 +98,10 @@ handle.locationName = function(locationId,newName) {
 
 // Set up the page after the html is fully loaded
 window.onload = function () {
+    if (window.opener.userType == 0) {
+	// readonly
+	document.getElementById('addLocation').style.display = 'none';
+    }
     document.getElementById('locationName').onchange = clickSubmitAdd;
     document.getElementById('locationName').onkeyup = blurOnReturnKey;
     doit("getLocations",{});

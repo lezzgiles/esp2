@@ -85,6 +85,7 @@ eval {
 	push @returns, [ 'success' ];
 
     } elsif ($command eq 'addLocation') {
+	if ($type <= READONLY) { push @returns, ['error','No permission']; return }
 	my $locationName = $query->param('locationName');
 	my ($count) = $dbh->selectrow_array("SELECT COUNT(*) FROM location WHERE locationName = ?",undef,$locationName);
 	if ($count > 0) {
@@ -116,6 +117,8 @@ eval {
 	}
 
     } elsif ($command eq 'hiddenLocation') {
+	if ($type <= READONLY) { push @returns, ['error','No permission']; return }
+
 	my $locationId = $query->param('locationId');
 	my $sth = $dbh->prepare("SELECT locationHidden FROM location WHERE locationId = ?",undef);
 	$sth->execute($locationId);
@@ -150,6 +153,8 @@ eval {
 	push @returns, [ 'success' ];
 
     } elsif ($command eq 'changeLocationName') {
+	if ($type <= READONLY) { push @returns, ['error','No permission']; return }
+
 	my $locationId = $query->param('locationId');
 	my $newName = $query->param('newName');
 
@@ -223,10 +228,8 @@ eval {
 	push @returns, [ 'success' ];
 
     } elsif ($command eq 'changePassword') {
-	if ($type < ADMIN) {
-	    push @returns, [ 'error', "Must be an administrator to do this" ];
-	    return;
-	}
+	if ($type < ADMIN) { push @returns, [ 'error', "Must be an administrator to do this" ]; return;	}
+
 	my $changeUserId = $query->param('changeUserId');
 	my $newPassword = $query->param('newPassword');
 	$dbh->do("UPDATE user SET userPassword = ? WHERE userId = ?",undef,$newPassword,$changeUserId);

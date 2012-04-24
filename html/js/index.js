@@ -29,7 +29,8 @@ function clickLogout() {
     if (accountWindow) { accountWindow.close(); }
 }
 
-handle.login = function(userType) {
+handle.login = function(myUserType) {
+    userType = myUserType;
     // Login worked - enable the buttons
     document.getElementById('locationsButton').disabled = '';
     if (userType == 2) {
@@ -45,15 +46,16 @@ handle.login = function(userType) {
 }
 
 window.onload = function() {
+    var specs = "titlebar=no,location=no,menubar=no,status=yes,toolbar=no,width=600,scrollbars=yes";
     document.getElementById('loginButton').onclick = clickLogin;
     document.getElementById('logoutButton').onclick = clickLogout;
     document.getElementById('locationsButton').onclick = function() {
-	locationsWindow = window.open("locations.html","locations","titlebar=no,location=no,menubar=no,status=yes,toolbar=no");
+	locationsWindow = window.open("location.html","locations",specs);
     }
     document.getElementById('adminButton').onclick = function() {
-	adminWindow = window.open("admin.html","admin","titlebar=no,location=no,menubar=no,status=yes,toolbar=no");
+	adminWindow = window.open("admin.html","admin",specs);
     }
     document.getElementById('changeMyPasswordButton').onclick = function() {
-	changeMyPasswordWindow = window.open("changeMyPassword.html","changeMyPassword","titlebar=no,location=no,menubar=no,status=yes,toolbar=no");
+	changeMyPasswordWindow = window.open("changeMyPassword.html","changeMyPassword",specs+',height=240');
     }
 }
