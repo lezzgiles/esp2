@@ -75,6 +75,11 @@ eval {
 	return;
     }
 
+    if ($password eq 'changeme' &&  $command ne 'changeMyPassword' && $command ne 'login') {
+	push @returns, [ 'error', 'You must change your password before you can do anything else' ];
+	return;
+    }
+
     if ($command eq 'login') {
 	push @returns, [ 'login',$type ];
 	push @returns, [ 'success' ];

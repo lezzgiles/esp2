@@ -69,7 +69,11 @@ handle.user = function(userId,userName,userType,userHidden) {
     var hiddenTd = document.createElement('td');
     var hiddenCheckbox = document.createElement('input');
     hiddenCheckbox.type = 'checkbox';
-    hiddenCheckbox.checked = (userHidden == 1);
+    hiddenCheckbox.className = 'hiddencheckbox';
+    if (userHidden == 1) {
+	hiddenCheckbox.checked = true;
+	tr.style.display = 'none';
+    } 
     hiddenCheckbox.id = 'userHiddenCheckbox'+userId;
     hiddenCheckbox.onclick = userHiddenCheckboxClick(userId);
     hiddenTd.appendChild(hiddenCheckbox);
@@ -147,5 +151,6 @@ handle.username = function(userId,newName) {
 window.onload = function () {
     document.getElementById('addUserSubmit').onclick = clickSubmitAdd;
     doit("getUsers",{});
+    hiddenRows.init();
 }
 

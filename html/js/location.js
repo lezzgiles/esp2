@@ -36,7 +36,11 @@ handle.location = function(locationId,locationName,locationHidden) {
     var hiddenTd = document.createElement('td');
     var hiddenCheckbox = document.createElement('input');
     hiddenCheckbox.type = 'checkbox';
-    hiddenCheckbox.checked = (locationHidden == 1);
+    hiddenCheckbox.className = 'hiddencheckbox';
+    if (locationHidden == 1) {
+	hiddenCheckbox.checked = true;
+	tr.style.display = 'none';
+    }
     hiddenCheckbox.id = 'hiddenCheckbox'+locationId;
     hiddenCheckbox.onclick = hiddenCheckboxClick(locationId);
     hiddenTd.appendChild(hiddenCheckbox);
@@ -55,7 +59,14 @@ function hiddenCheckboxClick(id) { return function() {
 }
 
 handle.locationHidden = function(locationId,locationHidden) {
-    document.getElementById('hiddenCheckbox'+locationId).checked = (locationHidden == 1);
+    checkbox = document.getElementById('hiddenCheckbox'+locationId);
+    if (locationHidden == 1) {
+	checkbox.checked = true;
+	checkbox.parentNode.hidden = 1;
+    } else {
+	checkbox.checked = false;
+	checkbox.parentNode.hidden = 0;
+    }
 }
 
 function changeLocationName(id,text) { return function() {
@@ -77,28 +88,10 @@ handle.locationName = function(locationId,newName) {
     clearSorted(document.getElementById('locationNameHeader'));
 }
 
-function showHidden() {
-    var showHidden = document.getElementById('showHiddenCheckbox').checked;
-
-    var tbody = document.getElementById('locationsTable').tBodies[0];
-    forEach (tbody.rows, function(tr) {
-	if (showHidden) {
-	    tr.style.display = 'table-row';
-	} else {
-	    if (tr.childNodes[1].childNodes[0].checked == true) {
-		tr.style.display = 'none';
-	    } else {
-		tr.style.display = 'table-row';
-	    }
-	}
-    });
-}
-
 // Set up the page after the html is fully loaded
 window.onload = function () {
     document.getElementById('locationName').onchange = clickSubmitAdd;
     document.getElementById('locationName').onkeyup = blurOnReturnKey;
-    document.getElementById('showHiddenCheckbox').onchange = showHidden;
     doit("getLocations",{});
+    hiddenRows.init();
 }
-

@@ -6,6 +6,7 @@ ESP: Admin
 <link rel="stylesheet" href="css/esp.css" type="text/css">
 <script src="js/utils.js"></script>
 <script src="js/sorttable.js"></script>
+<script src="js/hiddenRows.js"></script>
 <script src="js/admin.js"></script>
 </HEAD>
 <BODY>
@@ -27,6 +28,7 @@ ESP: Admin
 <input type="button" id="addUserSubmit" value="Add user">
 </fieldset>
 </form>
+<label>Show hidden users<input type="checkbox" id="usersHideCheckbox" class="hideCheckbox"></label>
 <table border=1 id="usersTable" class="listthings sortable">
 <thead>
 <tr><th id="userNameHeader">Username</th><th class="sorttable_nosort">Type</th><th class="sorttable_nosort">Hidden</th><th class="sorttable_nosort"></th></tr>

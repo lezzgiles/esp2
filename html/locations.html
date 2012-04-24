@@ -6,6 +6,7 @@ ESP: Locations
 <link rel="stylesheet" href="css/esp.css" type="text/css">
 <script src="js/utils.js"></script>
 <script src="js/sorttable.js"></script>
+<script src="js/hiddenRows.js"></script>
 <script src="js/location.js"></script>
 </HEAD>
 <BODY>
@@ -20,7 +21,7 @@ ESP: Locations
 <label>Location name:<input type="text" id="locationName" size="40"></label><br />
 </fieldset>
 </form>
-<label>Show hidden items<input type="checkbox" id="showHiddenCheckbox"></label>
+<label>Show hidden locations<input type="checkbox" id="locationsHideCheckbox" class="hideCheckbox"></label>
 <table border=1 id="locationsTable" class="listthings sortable">
 <thead>
 <tr><th id="locationNameHeader">Location name</th><th class="sorttable_nosort">Hidden</th></tr>
