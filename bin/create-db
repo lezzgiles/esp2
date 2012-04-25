@@ -14,6 +14,8 @@ CREATE TABLE location (
     locationName VARCHAR NOT NULL UNIQUE,
     locationHidden ENUM(0,1) DEFAULT 0
 );
+INSERT INTO location (locationName) VALUES ('receiving');
+
 CREATE TABLE user (
     userId INTEGER PRIMARY KEY,
     userName VARCHAR NOT NULL UNIQUE,
@@ -22,6 +24,14 @@ CREATE TABLE user (
     userType NOT NULL DEFAULT 1
 );
 INSERT INTO user (userName,userPassword,userType) VALUES ('admin','changeme',2);
+
+CREATE TABLE bin (
+    binId INTEGER PRIMARY KEY,
+    binName VARCHAR NOT NULL UNIQUE,
+    binSlots INTEGER NOT NULL,
+    binHidden NOT NULL DEFAULT 0
+);
+INSERT INTO bin (binName,binSlots) VALUES ('arrived',0);
 !
 
 # userType is..
@@ -29,5 +39,7 @@ INSERT INTO user (userName,userPassword,userType) VALUES ('admin','changeme',2);
 # 1 = normal
 # 2 = admin
 
-chown apache:apache $directory
-chown apache:apache $directory/db
+#chown apache:apache $directory
+#chown apache:apache $directory/db
+chmod 777 $directory
+chmod 777 $directory/db

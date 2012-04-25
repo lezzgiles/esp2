@@ -138,7 +138,7 @@ function changeUserName(id,text) { return function() {
     }
 }
 
-handle.username = function(userId,newName) {
+handle.userName = function(userId,newName) {
     var userNameText = document.getElementById('userNameText'+userId);
     userNameText.value = newName;
     userNameText.parentNode.setAttribute('sorttable_customkey', newName);

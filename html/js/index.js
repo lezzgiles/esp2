@@ -20,11 +20,13 @@ function clickLogout() {
     username = '';
     password = '';
     document.getElementById('locationsButton').disabled = 'disabled';
+    document.getElementById('binsButton').disabled = 'disabled';
     document.getElementById('adminButton').disabled = 'disabled';
     document.getElementById('changeMyPasswordButton').disabled = 'disabled';
     document.getElementById('loginButton').disabled = '';
     document.getElementById('logoutButton').disabled = 'disabled';
     if (locationsWindow) { locationsWindow.close(); }
+    if (binsWindow) { binsWindow.close(); }
     if (adminWindow) { adminWindow.close(); }
     if (accountWindow) { accountWindow.close(); }
 }
@@ -33,6 +35,7 @@ handle.login = function(myUserType) {
     userType = myUserType;
     // Login worked - enable the buttons
     document.getElementById('locationsButton').disabled = '';
+    document.getElementById('binsButton').disabled = '';
     if (userType == 2) {
 	document.getElementById('adminButton').disabled = '';
     }
@@ -51,6 +54,9 @@ window.onload = function() {
     document.getElementById('logoutButton').onclick = clickLogout;
     document.getElementById('locationsButton').onclick = function() {
 	locationsWindow = window.open("location.html","locations",specs);
+    }
+    document.getElementById('binsButton').onclick = function() {
+	binsWindow = window.open("bin.html","bins",specs);
     }
     document.getElementById('adminButton').onclick = function() {
 	adminWindow = window.open("admin.html","admin",specs);

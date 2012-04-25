@@ -348,9 +348,13 @@ function doit (command,parameters) {
 	password = window.opener.password;
     }
 
+    // This setting is picked up by the api script
+    var apiVersion = 1;
+
     parameters['command'] = command;
     parameters['database'] = database;
     parameters['username'] = username;
+    parameters['apiVersion'] = apiVersion;
     parameters['password'] = password;
 
     var myHandler;

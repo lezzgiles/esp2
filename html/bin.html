@@ -1,0 +1,36 @@
+<HTML>
+<HEAD>
+<TITLE>
+ESP: Bins
+</TITLE>
+<link rel="stylesheet" href="css/esp.css" type="text/css">
+<script src="js/utils.js"></script>
+<script src="js/sorttable.js"></script>
+<script src="js/hiddenRows.js"></script>
+<script src="js/bin.js"></script>
+</HEAD>
+<BODY>
+<div class="mainbody">
+<h1>
+ESP: Bins
+</h1>
+<form id="addBin">
+<fieldset class="add">
+<legend class="add">New Bin</legend>
+<label>Bin name:<input type="text" id="binName" size="40"></label><br />
+<label>Bin size:<input type="text" id="binSlots" size="5"></label> <i>Enter the number of spaces, use 0 for no limit.<br />
+<input type="button" id="addBinSubmit" value="Add bin">
+</fieldset>
+</form>
+<label>Show hidden bins<input type="checkbox" id="binsHideCheckbox" class="hideCheckbox"></label>
+<table border=1 id="binsTable" class="listthings sortable">
+<thead>
+<tr><th id="binNameHeader">Bin name</th><th id="binSlotsHeader">Bin size</th><th class="sorttable_nosort">Hidden</th></tr>
+</thead>
+<tbody>
+</tbody>
+</table>
+</div>
+
+</BODY>
+</HTML>

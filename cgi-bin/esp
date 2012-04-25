@@ -5,6 +5,7 @@ use strict;
 
 use CGI;
 use DBI;
+use FindBin qw($Bin);
 use JSON qw(encode_json);
 
 use constant ADMIN => 2;
@@ -33,9 +34,25 @@ eval {
     my $database = $query->param('database');
     my $username = $query->param('username');
     my $password = $query->param('password');
+    my $queryApiVersion = $query->param('apiVersion');
+
+    # Get the api version number from the javascript file
+    my $apiVersion;
+    open V, "$Bin/../html/js/utils.js" or do {
+	push @returns, [ 'error', 'Internal error: Missing apiVersion file' ];
+	return;
+    };
+
+    /\bapiVersion\s*=\s*(.*)\s*;/ && ($apiVersion = $1) while <V>;
+    close V;
+
+    if ($queryApiVersion != $apiVersion || !$apiVersion) {
+	push @returns, [ 'error', 'The server has been updated - you need to log out and reload the login page before you can continue.  If you see this message more than once make sure you are reloading the page, e.g. in Firefox you must press the shift key while clicking on the reload button' ];
+	return;
+    }
 
     # Config file is a list of pairs of lines, with database name and directory
-    open CONFIG, "/var/esp/config" or die "Cannot open config file, $!\n";
+    open CONFIG, "$Bin/config" or die "Cannot open config file, $!\n";
     my %config = map { chomp; $_ } <CONFIG>;
     close CONFIG;
 
@@ -98,6 +115,21 @@ eval {
 	    push @returns, [ 'success' ];
 	}
 
+    } elsif ($command eq 'addBin') {
+	if ($type <= READONLY) { push @returns, ['error','No permission']; return }
+	my $binName = $query->param('binName');
+	my $binSlots = $query->param('binSlots');
+	my ($count) = $dbh->selectrow_array("SELECT COUNT(*) FROM bin WHERE binName = ?",undef,$binName);
+	if ($count > 0) {
+	    push @returns, [ 'error', "Bin $binName already exists\n" ];
+	} else {
+	    $dbh->do("INSERT INTO bin (binName,binSlots) VALUES (?,?)",undef,$binName,$binSlots);
+	    my $binId = $dbh->last_insert_id(undef,undef,undef,undef);
+	    $dbh->commit;
+	    push @returns, [ 'bin', $binId, $binName, $binSlots, 0 ];
+	    push @returns, [ 'success' ];
+	}
+
     } elsif ($command eq 'addUser') {
 	if ($type < ADMIN) { push @returns, ['error','Must be an administrator to do this']; return }
 
@@ -127,6 +159,19 @@ eval {
 	$dbh->do("UPDATE location SET locationHidden = ? WHERE locationId = ?",undef,$locationHidden,$locationId);
 	$dbh->commit;
 	push @returns, [ 'locationHidden', $locationId, $locationHidden ];
+	push @returns, [ 'success' ];
+
+    } elsif ($command eq 'hiddenBin') {
+	if ($type <= READONLY) { push @returns, ['error','No permission']; return }
+
+	my $binId = $query->param('binId');
+	my $sth = $dbh->prepare("SELECT binHidden FROM bin WHERE binId = ?",undef);
+	$sth->execute($binId);
+	my ($binHidden) = $sth->fetchrow_array;
+	$binHidden = !$binHidden;
+	$dbh->do("UPDATE bin SET binHidden = ? WHERE binId = ?",undef,$binHidden,$binId);
+	$dbh->commit;
+	push @returns, [ 'binHidden', $binId, $binHidden ];
 	push @returns, [ 'success' ];
 
     } elsif ($command eq 'hiddenUser') {
@@ -170,6 +215,35 @@ eval {
 	    push @returns, [ 'success' ];
 	}
 
+    } elsif ($command eq 'changeBinName') {
+	if ($type <= READONLY) { push @returns, ['error','No permission']; return }
+
+	my $binId = $query->param('binId');
+	my $newName = $query->param('newName');
+
+	my ($count) = $dbh->selectrow_array("SELECT COUNT(*) FROM bin WHERE binName = ?",undef,$newName);
+	if ($count > 0) {
+	    my ($oldName) = $dbh->selectrow_array("SELECT binName FROM bin WHERE binId = ?",undef,$binId);
+	    push @returns, [ 'binName', $binId, $oldName ];
+	    push @returns, [ 'error', "Bin $newName already exists\n" ];
+	} else {
+	    $dbh->do("UPDATE bin SET binName = ? WHERE binId = ?",undef,$newName,$binId);
+	    $dbh->commit;
+	    push @returns, [ 'binName', $binId, $newName ];
+	    push @returns, [ 'success' ];
+	}
+
+    } elsif ($command eq 'changeBinSlots') {
+	if ($type <= READONLY) { push @returns, ['error','No permission']; return }
+
+	my $binId = $query->param('binId');
+	my $newSlots = $query->param('newSlots');
+
+	$dbh->do("UPDATE bin SET binSlots = ? WHERE binId = ?",undef,$newSlots,$binId);
+	$dbh->commit;
+	push @returns, [ 'binSlots', $binId, $newSlots ];
+	push @returns, [ 'success' ];
+
     } elsif ($command eq 'changeUserName') {
 	if ($type < ADMIN) { push @returns, ['error','Must be an administrator to do this']; return }
 
@@ -193,6 +267,18 @@ eval {
 	$sth->execute;
 	while (my @a = $sth->fetchrow_array) {
 	    push @returns, [ 'location', @a ];
+	}
+	if ($sth->err) {
+	    push @returns, [ 'error', $sth->err ];
+	} else {
+	    push @returns, [ 'success' ];
+	}
+
+    } elsif ($command eq 'getBins') {
+	my $sth = $dbh->prepare("SELECT binId,binName,binSlots,binHidden FROM bin ORDER BY binName DESC");
+	$sth->execute;
+	while (my @a = $sth->fetchrow_array) {
+	    push @returns, [ 'bin', @a ];
 	}
 	if ($sth->err) {
 	    push @returns, [ 'error', $sth->err ];
@@ -245,7 +331,7 @@ if ($@) {
     push @returns, [ 'error', $@ ];
 }
 
-$dbh->disconnect;
+$dbh and $dbh->disconnect;
 
 if ($trace) {
     foreach my $return (@returns) {

@@ -70,10 +70,8 @@ handle.locationHidden = function(locationId,locationHidden) {
     checkbox = document.getElementById('hiddenCheckbox'+locationId);
     if (locationHidden == 1) {
 	checkbox.checked = true;
-	checkbox.parentNode.hidden = 1;
     } else {
 	checkbox.checked = false;
-	checkbox.parentNode.hidden = 0;
     }
 }
 
