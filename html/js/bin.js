@@ -22,7 +22,10 @@ function clickSubmitAdd() {
     });
 }
 
-handle.bin = function(binId,binName,binSlots,binHidden) {
+handle.bin = function(bin) {
+    opener.addBin(bin);
+}
+    function dummy() {
     var binsTable = document.getElementById('binsTable');
     var tbody = binsTable.tBodies[0];
     var tr = document.createElement('tr');
@@ -57,6 +60,26 @@ handle.bin = function(binId,binName,binSlots,binHidden) {
     slotsTd.appendChild(binSlotsText);
     slotsTd.setAttribute('sorttable_customkey', binSlots);
     tr.appendChild(slotsTd);
+
+    // Location select
+    var locationTd = document.createElement('td');
+    var locationSelect = document.createElement('select');
+    var locationOption = document.createElement('option');
+    locationOption.text = locationName;
+    locationOption.value = locationId;
+    locationSelect.name = 'location-select';
+    locationSelect.add(locationOption);
+    if (window.opener.userType == 0) {
+	locationSelect.disabled = true;
+    } else {
+	location.onfocus = setLocationOptions(locationSelect);
+    }
+    locationSelect.id = 'locationSelect'+binId;
+    locationSelect.onkeyup = blurOnReturnKey;
+    locationSelect.onchange = changeLocation(binId,locationSelect);
+    locationTd.appendChild(locationSelect);
+    locationTd.setAttribute('sorttable_customkey', locationName);
+    tr.appendChild(locationTd);
 
     // Hide bin checkbox
     var hiddenTd = document.createElement('td');
@@ -106,6 +129,21 @@ function changeBinName(id,text) { return function() {
     }
 }
 
+function setLocationOptions(opt) {
+    return function() {
+	doit('getLocations',{});
+    }
+}
+function changeLocation(id,text) { return function() {
+	if (text.value == "") {
+	    alert("You cannot have a blank location");
+	} else {
+	    doit('changeLocation',{binId:id,newName:text.value});
+	}
+	return false;
+    }
+}
+
 handle.binName = function(binId,newName) {
     var binNameText = document.getElementById('binNameText'+binId);
     binNameText.value = newName;
@@ -143,4 +181,5 @@ window.onload = function () {
     document.getElementById('addBinSubmit').onclick = clickSubmitAdd;
     doit("getBins",{});
     hiddenRows.init();
+    opener.registered.push(document.getElementById('addBinSubmit'));
 }

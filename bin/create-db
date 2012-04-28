@@ -9,6 +9,9 @@ echo $directory >> /home/lgiles/esp2/cgi-bin/config
 mkdir -p $directory
 
 sqlite3 $directory/db <<!
+
+PRAGMA foreign_keys = ON;
+
 CREATE TABLE location (
     locationId INTEGER PRIMARY KEY,
     locationName VARCHAR NOT NULL UNIQUE,
@@ -29,9 +32,10 @@ CREATE TABLE bin (
     binId INTEGER PRIMARY KEY,
     binName VARCHAR NOT NULL UNIQUE,
     binSlots INTEGER NOT NULL,
-    binHidden NOT NULL DEFAULT 0
+    binHidden NOT NULL DEFAULT 0,
+    locationId INTEGER NOT NULL REFERENCES location(locationId)
 );
-INSERT INTO bin (binName,binSlots) VALUES ('arrived',0);
+INSERT INTO bin (binName,binSlots,locationId) VALUES ('arrived',0,1);
 !
 
 # userType is..

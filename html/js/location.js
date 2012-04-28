@@ -5,36 +5,82 @@ function clickSubmitAdd() {
     if (locationName == "") {
 	alert("You must enter a name for the new location");
     } else {
-	doit('addLocation',{locationName:locationName}, {
+	opener.addLocation({locationName:locationName}, {
 	    success:function() {
 	        document.getElementById('locationName').value = "";
 	        document.getElementById('locationName').focus();
 	    },
-	    error:function() {
+	    error:function(message) {
+		alert(message);
                 document.getElementById('locationName').focus();
             },
 	});
     }
 }
 
-handle.location = function(locationId,locationName,locationHidden) {
-    var locationsTable = document.getElementById('locationsTable');
-    var tbody = locationsTable.tBodies[0];
+function hiddenCheckboxClick(id) {
+    return function() {
+	opener.setLocationHidden({locationId:id,locationHidden:this.checked?1:0},{});
+	return false;
+    };
+}
+
+function changeLocationName(id) {
+    return function() {
+	if (this.value == "") {
+	    alert("You cannot have a blank location name");
+	} else {
+	    opener.setLocationName({locationId:id,locationName:this.value},{});
+	}
+	return false;
+    }
+}
+
+setLocation = function(locationDetails) {
+
+    // Look to see if this location is already in the table
+    var foundIt = false;
+    forEach(this.rows,function(row) {
+	    if (row.locationId == locationDetails.locationId) {
+		foundIt = true;
+		// This is the correct row, update as necessary
+		row.cells[0].childNodes[0].value = locationDetails.locationName;
+		var showHidden = document.getElementById('locationHideCheckbox').checked;
+		if (locationDetails.locationHidden == 1) {
+		    row.cells[1].childNodes[0].checked = true;
+		    if (showHidden) {
+			row.style.display = 'table-row';
+		    } else {
+			row.style.display = 'none';
+		    }
+		} else {
+		    row.cells[1].childNodes[0].checked = false;
+		    row.style.display = 'table-row';
+		}
+	    }
+		    
+	});
+
+    if (foundIt) { return; }
+    
+    // Not in the table, so add a row
+    var tbody = this.tBodies[0];
     var tr = document.createElement('tr');
+    tr.locationId = locationDetails.locationId;
 
     // Location name textbox
     var nameTd = document.createElement('td');
     var locationNameText = document.createElement('input');
     locationNameText.type = 'text';
-    locationNameText.value = locationName;
+    locationNameText.value = locationDetails.locationName;
     if (window.opener.userType == 0) {
 	locationNameText.disabled = true;
     }
-    locationNameText.id = 'locationNameText'+locationId;
+    locationNameText.id = 'locationNameText'+locationDetails.locationId;
     locationNameText.onkeyup = blurOnReturnKey;
-    locationNameText.onchange = changeLocationName(locationId,locationNameText);
+    locationNameText.onchange = changeLocationName(locationDetails.locationId);
     nameTd.appendChild(locationNameText);
-    nameTd.setAttribute('sorttable_customkey', locationName);
+    nameTd.setAttribute('sorttable_customkey', locationDetails.locationName);
     tr.appendChild(nameTd);
 
     // Hide location checkbox
@@ -42,53 +88,24 @@ handle.location = function(locationId,locationName,locationHidden) {
     var hiddenCheckbox = document.createElement('input');
     hiddenCheckbox.type = 'checkbox';
     hiddenCheckbox.className = 'hiddencheckbox';
-    if (locationHidden == 1) {
+    var showHidden = document.getElementById('locationHideCheckbox').checked;
+    if (locationDetails.locationHidden == 1) {
 	hiddenCheckbox.checked = true;
-	tr.style.display = 'none';
+	if (showHidden) {
+	    tr.style.display = 'table-row';
+	} else {
+	    tr.style.display = 'none';
+	}
     }
     if (window.opener.userType == 0) {
 	hiddenCheckbox.disabled = true;
     }
-    hiddenCheckbox.id = 'hiddenCheckbox'+locationId;
-    hiddenCheckbox.onclick = hiddenCheckboxClick(locationId);
+    hiddenCheckbox.id = 'hiddenCheckbox'+locationDetails.locationId;
+    hiddenCheckbox.onclick = hiddenCheckboxClick(locationDetails.locationId);
     hiddenTd.appendChild(hiddenCheckbox);
     tr.appendChild(hiddenTd);
 
     tbody.insertBefore(tr,tbody.firstChild);
-
-    // The table is no longer sorted
-    clearSorted(document.getElementById('locationNameHeader'));
-}
-
-function hiddenCheckboxClick(id) { return function() {
-	doit("hiddenLocation",{locationId:id});
-	return false;
-    }
-}
-
-handle.locationHidden = function(locationId,locationHidden) {
-    checkbox = document.getElementById('hiddenCheckbox'+locationId);
-    if (locationHidden == 1) {
-	checkbox.checked = true;
-    } else {
-	checkbox.checked = false;
-    }
-}
-
-function changeLocationName(id,text) { return function() {
-	if (text.value == "") {
-	    alert("You cannot have a blank location name");
-	} else {
-	    doit('changeLocationName',{locationId:id,newName:text.value});
-	}
-	return false;
-    }
-}
-
-handle.locationName = function(locationId,newName) {
-    var locationNameText = document.getElementById('locationNameText'+locationId);
-    locationNameText.value = newName;
-    locationNameText.parentNode.setAttribute('sorttable_customkey', newName);
 
     // The table is no longer sorted
     clearSorted(document.getElementById('locationNameHeader'));
@@ -102,6 +119,7 @@ window.onload = function () {
     }
     document.getElementById('locationName').onchange = clickSubmitAdd;
     document.getElementById('locationName').onkeyup = blurOnReturnKey;
-    doit("getLocations",{});
+    document.getElementById('locationTable').setRow = setLocation;
+    opener.getLocations();
     hiddenRows.init();
 }

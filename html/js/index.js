@@ -1,5 +1,49 @@
 // Routines for login page
 
+// esp-specific data
+esp = {
+    windows: {},
+};
+
+///////////////////////////////////////////////////////////////////////////////
+// Location handling
+
+function getLocations() {
+    if ('locations' in esp) {
+	forEach (esp.locations, tellLocation);
+    } else {
+	esp.locations = {};
+	doit("getLocations",{});
+    }
+}
+
+// This handler is called after a doit("getLocations"), once for each location
+handle.location = function (locationDetails) {
+    esp.locations[locationDetails.locationId] = locationDetails;
+    tellLocation(locationDetails);
+}
+
+function tellLocation(locationDetails) {
+    forEach (esp.windows, function(window) {
+	forEach(window.document.getElementsByName('locationTable'), function(table) {
+		table.setRow(locationDetails);
+	});
+    });
+}
+
+function addLocation(locationDetails,handlers) {
+    doit('addLocation',locationDetails,handlers);
+}
+
+function setLocationHidden(locationDetails,handlers) {
+    doit('setLocationHidden',locationDetails,handlers);
+}
+
+function setLocationName(locationDetails,handlers) {
+    doit('setLocationName',locationDetails,handlers);
+}
+
+///////////////////////////////////////////////////////////////////////////////
 function clickLogin() {
     database = document.getElementById('database').value;
     username = document.getElementById('username').value;
@@ -25,10 +69,7 @@ function clickLogout() {
     document.getElementById('changeMyPasswordButton').disabled = 'disabled';
     document.getElementById('loginButton').disabled = '';
     document.getElementById('logoutButton').disabled = 'disabled';
-    if (locationsWindow) { locationsWindow.close(); }
-    if (binsWindow) { binsWindow.close(); }
-    if (adminWindow) { adminWindow.close(); }
-    if (accountWindow) { accountWindow.close(); }
+    forEach(esp.windows,function(w) { w.close() });
 }
 
 handle.login = function(myUserType) {
@@ -53,15 +94,15 @@ window.onload = function() {
     document.getElementById('loginButton').onclick = clickLogin;
     document.getElementById('logoutButton').onclick = clickLogout;
     document.getElementById('locationsButton').onclick = function() {
-	locationsWindow = window.open("location.html","locations",specs);
+	esp.windows.location = window.open("location.html","locations",specs);
     }
     document.getElementById('binsButton').onclick = function() {
-	binsWindow = window.open("bin.html","bins",specs);
+	esp.windows.bin = window.open("bin.html","bins",specs);
     }
     document.getElementById('adminButton').onclick = function() {
-	adminWindow = window.open("admin.html","admin",specs);
+	esp.windows.admin = window.open("admin.html","admin",specs);
     }
     document.getElementById('changeMyPasswordButton').onclick = function() {
-	changeMyPasswordWindow = window.open("changeMyPassword.html","changeMyPassword",specs+',height=240');
+	esp.windows.changeMyPassword = window.open("changeMyPassword.html","changeMyPassword",specs+',height=240');
     }
 }

@@ -340,8 +340,16 @@ HTTP.get = function(url,callback,options) {
 // key success - called if successful
 // key error - called if error
 
-function doit (command,parameters) {
+function showContents(obj) {
+    var retval = "";
+    forEach(Object.keys(obj),function(k) {
+	    retval = retval+k+': '+obj[k]+'; ';
+	});
+    return retval;
+}
 
+function doit (command,parameters) {
+    //   alert('Sending: '+command+'; '+showContents(parameters));
     if (window.opener) {
 	database = window.opener.database;
 	username = window.opener.username;
@@ -362,11 +370,7 @@ function doit (command,parameters) {
     if (arguments.length == 3) {
 	var handlerFuncs = arguments[2];
 	myHandler = function(results) {
-	    if (handleResults(results)) {
-		if ('success' in handlerFuncs) { handlerFuncs.success(); }
-	    } else {
-		if ('error' in handlerFuncs) { handlerFuncs.error(); }
-	    }
+	    handleResults(results,handlerFuncs);
 	};
     } else {
 	myHandler = handleResults;
@@ -378,26 +382,33 @@ function doit (command,parameters) {
 handle = {};
 
 function handleResults(results) {
+    //alert(results);
+    var retval = true;
+    var message;
     if (results == null) {
-	alert("Request failed for an unknown reason");
-	return false;
-    }
-    var retval
-    results = eval(results);
-    forEach (results, function(result) {
+	message = "Request failed for an unknown reason";
+	retval = false;
+    } else {
+	results = eval(results);
+	forEach (results, function(result) {
 	    var command = result.shift();
 	    if (command == 'error') {
-		alert(result[0]);
+		message = result[0];
 		retval = false;
-	    } else if (command == 'success') {
-		retval = true;
 	    } else if (command in handle) {
-		handle[command].apply(null,result);
+		handle[command](result[0]);
 	    } else {
-		alert("Internal error - got unexpected response "+command);
+		message = "Internal error - got unexpected response "+command;
 	    }
 	});
-    return retval;
+    }
+    if (arguments.length == 2) {
+	if (retval) {
+	    if ('success' in arguments[1]) { arguments[1].success(); }
+	} else {
+	    if ('error' in arguments[1]) { arguments[1].error(message); }
+	}
+    }
 }
 
 function blurOnReturnKey(evt) {
@@ -405,7 +416,6 @@ function blurOnReturnKey(evt) {
    var node = (evt.target) ? evt.target : ((evt.srcElement) ? evt.srcElement : null);
     if (evt.keyCode == 13) { node.blur(); return false;}
 }
-
 
 // end script-->
 
