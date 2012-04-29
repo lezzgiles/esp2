@@ -339,17 +339,7 @@ HTTP.get = function(url,callback,options) {
 // Takes an optional argument, a dictionary of functions:
 // key success - called if successful
 // key error - called if error
-
-function showContents(obj) {
-    var retval = "";
-    forEach(Object.keys(obj),function(k) {
-	    retval = retval+k+': '+obj[k]+'; ';
-	});
-    return retval;
-}
-
 function doit (command,parameters) {
-    //   alert('Sending: '+command+'; '+showContents(parameters));
     if (window.opener) {
 	database = window.opener.database;
 	username = window.opener.username;
@@ -364,6 +354,8 @@ function doit (command,parameters) {
     parameters['username'] = username;
     parameters['apiVersion'] = apiVersion;
     parameters['password'] = password;
+
+    debug.write('Sending: '+command,debug.showObject(parameters));
 
     var myHandler;
 
@@ -382,7 +374,7 @@ function doit (command,parameters) {
 handle = {};
 
 function handleResults(results) {
-    //alert(results);
+    debug.write('Response: '+results);
     var retval = true;
     var message;
     if (results == null) {
@@ -399,14 +391,20 @@ function handleResults(results) {
 		handle[command](result[0]);
 	    } else {
 		message = "Internal error - got unexpected response "+command;
+		retval = false;
 	    }
 	});
     }
-    if (arguments.length == 2) {
-	if (retval) {
-	    if ('success' in arguments[1]) { arguments[1].success(); }
+
+    if (retval) {
+	if (arguments.length == 2 && 'success' in arguments[1]) {
+	    arguments[1].success();
+	}
+    } else {
+	if (arguments.length == 2 && 'error' in arguments[1]) {
+	    arguments[1].error(message);
 	} else {
-	    if ('error' in arguments[1]) { arguments[1].error(message); }
+	    alert(message);
 	}
     }
 }

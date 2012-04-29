@@ -18,14 +18,15 @@ ESP: Bins
 <fieldset class="add">
 <legend class="add">New Bin</legend>
 <label>Bin name:<input type="text" id="binName" size="40"></label><br />
-<label>Bin size:<input type="text" id="binSlots" size="5"></label> <i>Enter the number of spaces, use 0 for no limit.<br />
+<label>Bin size:<input type="text" id="binSlots" size="5"></label> <i>Enter the number of spaces, use 0 for no limit.</i><br />
+<label>Bin location:<select id="binLocation"><option>Select one</option></select></label><br />
 <input type="button" id="addBinSubmit" value="Add bin">
 </fieldset>
 </form>
-<label>Show hidden bins<input type="checkbox" id="binsHideCheckbox" class="hideCheckbox"></label>
-<table border=1 id="binsTable" class="listthings sortable">
+<label>Show hidden bins<input type="checkbox" id="binHideCheckbox" class="hideCheckbox"></label>
+<table border=1 name="binTable" id="binTable" class="listthings sortable">
 <thead>
-<tr><th id="binNameHeader">Bin name</th><th id="binSlotsHeader">Bin size</th><th class="sorttable_nosort">Hidden</th></tr>
+<tr><th id="binNameHeader">Bin name</th><th id="binSlotsHeader">Bin size</th><th class="sorttable_nosort">Location</th><th class="sorttable_nosort">Hidden</th></tr>
 </thead>
 <tbody>
 </tbody>

@@ -25,10 +25,11 @@ handle.location = function (locationDetails) {
 
 function tellLocation(locationDetails) {
     forEach (esp.windows, function(window) {
-	forEach(window.document.getElementsByName('locationTable'), function(table) {
-		table.setRow(locationDetails);
+	    if (!window.document) { return; }
+	    forEach(window.document.getElementsByName('locationTable'), function(table) {
+		    table.setRow(locationDetails);
+		});
 	});
-    });
 }
 
 function addLocation(locationDetails,handlers) {
@@ -44,6 +45,117 @@ function setLocationName(locationDetails,handlers) {
 }
 
 ///////////////////////////////////////////////////////////////////////////////
+// User handling
+
+function getUsers() {
+    if ('users' in esp) {
+	forEach (esp.users, tellUser);
+    } else {
+	esp.users = {};
+	doit("getUsers",{});
+    }
+}
+
+// This handler is called after a doit("getUsers"), once for each user
+handle.user = function (userDetails) {
+    esp.users[userDetails.userId] = userDetails;
+    tellUser(userDetails);
+}
+
+function tellUser(userDetails) {
+    forEach (esp.windows, function(window) {
+	    if (!window.document) { return; }
+	    forEach(window.document.getElementsByName('userTable'), function(table) {
+		    table.setRow(userDetails);
+		});
+	});
+}
+
+function addUser(userDetails,handlers) {
+    doit('addUser',userDetails,handlers);
+}
+
+function setUserHidden(userDetails,handlers) {
+    doit('setUserHidden',userDetails,handlers);
+}
+
+function setUserType(userDetails,handlers) {
+    doit('setUserType',userDetails,handlers);
+}
+
+function setUserName(userDetails,handlers) {
+    doit('setUserName',userDetails,handlers);
+}
+function setUserPassword(userDetails,handlers) {
+    doit('setUserPassword',userDetails,handlers);
+}
+function changeMyPassword(userDetails,handlers) {
+    doit('changeMyPassword',userDetails,handlers);
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// Bin handling
+
+function getBins() {
+    if ('bins' in esp) {
+	forEach (esp.bins, tellBin);
+    } else {
+	esp.bins = {};
+	doit("getBins",{});
+    }
+}
+
+// This handler is called after a doit("getBins"), once for each bin
+handle.bin = function (binDetails) {
+    esp.bins[binDetails.binId] = binDetails;
+    tellBin(binDetails);
+}
+
+function tellBin(binDetails) {
+    forEach (esp.windows, function(window) {
+	    if (!window.document) { return; }
+	    forEach(window.document.getElementsByName('binTable'), function(table) {
+		    table.setRow(binDetails);
+		});
+	});
+}
+
+function addBin(binDetails,handlers) {
+    doit('addBin',binDetails,handlers);
+}
+
+function setBinHidden(binDetails,handlers) {
+    doit('setBinHidden',binDetails,handlers);
+}
+
+function setBinName(binDetails,handlers) {
+    doit('setBinName',binDetails,handlers);
+}
+function setBinLocation(binDetails,handlers) {
+    doit('setBinLocation',binDetails,handlers);
+}
+function setLocationOptions() {
+    var select = this;
+    if ('locations' in esp) {
+	if (select.expanded) { return }
+	select.remove(0);
+	forEach(esp.locations,function(locationDetails) {
+		var option = document.createElement('option');
+		option.text = locationDetails.locationName;
+		option.value = locationDetails.locationId;
+		select.add(option);
+	    });
+	select.expanded = true;
+    } else {
+	esp.locations = {}
+	doit("getLocations",{},{
+		success: function() {
+		    setLocationOptions.call(select);
+		},
+		    });
+    }
+}
+///////////////////////////////////////////////////////////////////////////////
 function clickLogin() {
     database = document.getElementById('database').value;
     username = document.getElementById('username').value;
@@ -57,8 +169,6 @@ function clickLogin() {
 }
 
 function clickLogout() {
-    document.getElementById('database').value = ''
-    document.getElementById('username').value = '';
     document.getElementById('password').value = '';
     database = '';
     username = '';
@@ -69,7 +179,17 @@ function clickLogout() {
     document.getElementById('changeMyPasswordButton').disabled = 'disabled';
     document.getElementById('loginButton').disabled = '';
     document.getElementById('logoutButton').disabled = 'disabled';
+
+    document.getElementById('database').disabled = '';
+    document.getElementById('username').disabled = '';
+    document.getElementById('password').disabled = '';
+
     forEach(esp.windows,function(w) { w.close() });
+
+    // Empty the database
+    esp = {
+	windows: {},
+    };
 }
 
 handle.login = function(myUserType) {
@@ -84,6 +204,10 @@ handle.login = function(myUserType) {
     document.getElementById('loginButton').disabled = 'disabled';
     document.getElementById('logoutButton').disabled = '';
     
+    document.getElementById('database').disabled = 'disabled';
+    document.getElementById('username').disabled = 'disabled';
+    document.getElementById('password').disabled = 'disabled';
+
     var loggedInMessage = document.getElementById('loggedInMessage');
     loggedInMessage.removeChild(loggedInMessage.childNodes[0]);
     loggedInMessage.insertBefore(document.createTextNode("Logged in to "+database+" as "+username),loggedInMessage.childNodes[0]);
@@ -104,5 +228,8 @@ window.onload = function() {
     }
     document.getElementById('changeMyPasswordButton').onclick = function() {
 	esp.windows.changeMyPassword = window.open("changeMyPassword.html","changeMyPassword",specs+',height=240');
+    }
+    document.getElementById('debugButton').onclick = function() {
+	esp.windows.debug = window.open("debug.html","debug",specs+',height=520,width=970');
     }
 }

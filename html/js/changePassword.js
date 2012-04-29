@@ -14,7 +14,10 @@ function clickChangePassword() {
 	return;
     }
 
-    doit('changePassword',{changeUserId:changeUserId,newPassword:newPassword});
+    opener.opener.setUserPassword({userId:changeUserId,newPassword:newPassword},{
+	    success: function() { window.close(); },
+	    error: function(msg) { alert(msg); },
+	});
 }
 
 handle.changePassword = function(changeUsername) {

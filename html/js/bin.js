@@ -1,48 +1,132 @@
 // Routines for bin management page
 
-function clickSubmitAdd() {
+function addBin() {
     binName = document.getElementById('binName').value;
     binSlots = document.getElementById('binSlots').value;
+    binLocationSelect = document.getElementById('binLocation');
+    binLocation = binLocationSelect.options[binLocationSelect.selectedIndex];
     if (binName == "") {
 	alert("You must enter a name for the new bin");
-	return;
-    }
-    if (binSlots == "") {
+    } else if (binSlots == "") {
 	alert("You must enter the number of items that can be stored in the new bin.  Enter 0 for no limit.");
-	return;
+    } else {
+	opener.addBin({binName:binName,binSlots:binSlots,locationId:binLocation}, {
+		success:function() {
+		    document.getElementById('binName').value = "";
+		    document.getElementById('binName').focus();
+		    select = document.getElementById('binLocation');
+		    while (select.options.length > 0) { select.remove(0) }
+		    var option = document.createElement('option');
+		    option.text = 'Select one';
+		    select.add(option);
+		    select.expanded = false;
+		},
+		error:function(msg) {
+		    alert(msg);
+		    document.getElementById('binName').focus();
+		},
+		    });
     }
-    doit('addBin',{binName:binName,binSlots:binSlots}, {
-	success:function() {
-	    document.getElementById('binName').value = "";
-	    document.getElementById('binName').focus();
-	},
-	error:function() {
-            document.getElementById('binName').focus();
-        },
-    });
 }
 
-handle.bin = function(bin) {
-    opener.addBin(bin);
+function setBinHidden(id) {
+    return function() {
+	opener.setBinHidden({binId:id,binHidden:this.checked?1:0},{});
+	return false;
+    }
 }
-    function dummy() {
-    var binsTable = document.getElementById('binsTable');
-    var tbody = binsTable.tBodies[0];
+
+function setBinName(id) {
+    return function() {
+	if (this.value == "") {
+	    alert("You cannot have a blank bin name");
+	} else {
+	    opener.setBinName({binId:id,binName:this.value},{});
+	}
+	return false;
+    }
+}
+
+function setBinSlots(id) {
+    return function() {
+	if (this.value == "") {
+	    alert("You cannot have a blank bin size");
+	} else {
+	    opener.setBinSlots({binId:id,newSlots:this.value},{});
+	}
+	return false;
+    }
+}
+
+function setLocationOptions() {
+    // set the list of options for this from opener.esp.locations
+}
+
+function setBinLocation(id) {
+    return function() {
+	opener.setBinLocation({binId:id,locationId:this.options[this.selectedIndex].value},{});
+	return false;
+    }
+}
+
+function setBin(binDetails) {
+
+    // Look to see if this bin is already in the table
+    var foundIt = false;
+    forEach(this.rows,function(row) {
+	    if (row.binId == binDetails.binId) {
+		foundIt = true;
+		// This is the correct row, update as necessary
+		// name
+		row.cells[0].childNodes[0].value = binDetails.binName;
+		// slots
+		row.cells[1].childNodes[0].value = binDetails.binSlots;
+		// location
+		var locationSelect = row.cells[2].childNode[1];
+		// Remove all the old options
+		while (locationSelect.options.length > 0) { locationSelect.remove(0) }
+		// Create a new option
+		var locationOption = document.createElement('option');
+		locationOption.text = binDetails.locationName;
+		locationOption.value = binDetails.locationId;
+		locationSelect.add(locationOption);
+
+		// hidden
+		var showHidden = document.getElementById('binHideCheckbox').checked;
+		if (binDetails.binHidden == 1) {
+		    row.cells[2].childNodes[0].checked = true;
+		    if (showHidden) {
+			row.style.display = 'table-row';
+		    } else {
+			row.style.display = 'none';
+		    }
+		} else {
+		    row.cells[2].childNodes[0].checked = false;
+		    row.style.display = 'table-row';
+		}
+		
+	    }
+		    
+	});
+
+    if (foundIt) { return; }
+
+    var tbody = this.tBodies[0];
     var tr = document.createElement('tr');
+    tr.binId = binDetails.binId
 
     // Bin name textbox
     var nameTd = document.createElement('td');
     var binNameText = document.createElement('input');
     binNameText.type = 'text';
-    binNameText.value = binName;
+    binNameText.value = binDetails.binName;
     if (window.opener.userType == 0) {
 	binNameText.disabled = true;
     }
-    binNameText.id = 'binNameText'+binId;
     binNameText.onkeyup = blurOnReturnKey;
-    binNameText.onchange = changeBinName(binId,binNameText);
+    binNameText.onchange = setBinName(binDetails.binId);
     nameTd.appendChild(binNameText);
-    nameTd.setAttribute('sorttable_customkey', binName);
+    nameTd.setAttribute('sorttable_customkey', binDetails.binName);
     tr.appendChild(nameTd);
 
     // Bin slots textbox
@@ -50,35 +134,31 @@ handle.bin = function(bin) {
     var binSlotsText = document.createElement('input');
     binSlotsText.type = 'text';
     binSlotsText.size = 5;
-    binSlotsText.value = binSlots;
+    binSlotsText.value = binDetails.binSlots;
     if (window.opener.userType == 0) {
 	binSlotsText.disabled = true;
     }
-    binSlotsText.id = 'binSlotsText'+binId;
     binSlotsText.onkeyup = blurOnReturnKey;
-    binSlotsText.onchange = changeBinSlots(binId,binSlotsText);
+    binSlotsText.onchange = setBinSlots(binDetails.binId);
     slotsTd.appendChild(binSlotsText);
-    slotsTd.setAttribute('sorttable_customkey', binSlots);
+    slotsTd.setAttribute('sorttable_customkey', binDetails.binSlots);
     tr.appendChild(slotsTd);
 
     // Location select
     var locationTd = document.createElement('td');
     var locationSelect = document.createElement('select');
     var locationOption = document.createElement('option');
-    locationOption.text = locationName;
-    locationOption.value = locationId;
-    locationSelect.name = 'location-select';
+    locationOption.text = binDetails.locationName;
+    locationOption.value = binDetails.locationId;
+    locationSelect.name = 'locationSelect';
     locationSelect.add(locationOption);
     if (window.opener.userType == 0) {
 	locationSelect.disabled = true;
     } else {
-	location.onfocus = setLocationOptions(locationSelect);
+	locationSelect.onfocus = setLocationOptions;
     }
-    locationSelect.id = 'locationSelect'+binId;
-    locationSelect.onkeyup = blurOnReturnKey;
-    locationSelect.onchange = changeLocation(binId,locationSelect);
+    locationSelect.onchange = setBinLocation(binDetails.binId);
     locationTd.appendChild(locationSelect);
-    locationTd.setAttribute('sorttable_customkey', locationName);
     tr.appendChild(locationTd);
 
     // Hide bin checkbox
@@ -86,87 +166,23 @@ handle.bin = function(bin) {
     var hiddenCheckbox = document.createElement('input');
     hiddenCheckbox.type = 'checkbox';
     hiddenCheckbox.className = 'hiddencheckbox';
-    if (binHidden == 1) {
+    var showHidden = document.getElementById('binHideCheckbox').checked;
+    if (binDetails.binHidden == 1) {
 	hiddenCheckbox.checked = true;
-	tr.style.display = 'none';
+	if (showHidden) {
+	    tr.style.display = 'table-row';
+	} else {
+	    tr.style.display = 'none';
+	}
     }
     if (window.opener.userType == 0) {
 	hiddenCheckbox.disabled = true;
     }
-    hiddenCheckbox.id = 'hiddenCheckbox'+binId;
-    hiddenCheckbox.onclick = hiddenCheckboxClick(binId);
+    hiddenCheckbox.onclick = setBinHidden(binDetails.binId);
     hiddenTd.appendChild(hiddenCheckbox);
     tr.appendChild(hiddenTd);
 
     tbody.insertBefore(tr,tbody.firstChild);
-
-    // The table is no longer sorted
-    clearSorted(document.getElementById('binNameHeader'));
-}
-
-function hiddenCheckboxClick(id) { return function() {
-	doit("hiddenBin",{binId:id});
-	return false;
-    }
-}
-
-handle.binHidden = function(binId,binHidden) {
-    checkbox = document.getElementById('hiddenCheckbox'+binId);
-    if (binHidden == 1) {
-	checkbox.checked = true;
-    } else {
-	checkbox.checked = false;
-    }
-}
-
-function changeBinName(id,text) { return function() {
-	if (text.value == "") {
-	    alert("You cannot have a blank bin name");
-	} else {
-	    doit('changeBinName',{binId:id,newName:text.value});
-	}
-	return false;
-    }
-}
-
-function setLocationOptions(opt) {
-    return function() {
-	doit('getLocations',{});
-    }
-}
-function changeLocation(id,text) { return function() {
-	if (text.value == "") {
-	    alert("You cannot have a blank location");
-	} else {
-	    doit('changeLocation',{binId:id,newName:text.value});
-	}
-	return false;
-    }
-}
-
-handle.binName = function(binId,newName) {
-    var binNameText = document.getElementById('binNameText'+binId);
-    binNameText.value = newName;
-    binNameText.parentNode.setAttribute('sorttable_customkey', newName);
-
-    // The table is no longer sorted
-    clearSorted(document.getElementById('binNameHeader'));
-}
-
-function changeBinSlots(id,text) { return function() {
-	if (text.value == "") {
-	    alert("You cannot have a blank bin size");
-	} else {
-	    doit('changeBinSlots',{binId:id,newSlots:text.value});
-	}
-	return false;
-    }
-}
-
-handle.binSlots = function(binId,newSlots) {
-    var binSlotsText = document.getElementById('binSlotsText'+binId);
-    binSlotsText.value = newSlots;
-    binSlotsText.parentNode.setAttribute('sorttable_customkey', newSlots);
 
     // The table is no longer sorted
     clearSorted(document.getElementById('binNameHeader'));
@@ -178,8 +194,9 @@ window.onload = function () {
 	// readonly
 	document.getElementById('addBin').style.display = 'none';
     }
-    document.getElementById('addBinSubmit').onclick = clickSubmitAdd;
-    doit("getBins",{});
+    document.getElementById('binLocation').onfocus = opener.setLocationOptions;
+    document.getElementById('addBinSubmit').onclick = addBin;
+    document.getElementById('binTable').setRow = setBin;
+    opener.getBins();
     hiddenRows.init();
-    opener.registered.push(document.getElementById('addBinSubmit'));
 }

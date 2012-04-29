@@ -18,8 +18,11 @@ function clickChangePassword() {
 	alert("Passwords do not match");
 	return;
     }
-
-    doit('changeMyPassword',{oldPassword:oldPassword,newPassword:newPassword});
+    
+    opener.changeMyPassword({oldPassword:oldPassword,newPassword:newPassword},{
+	    success: function() { window.close(); },
+	    error: function(msg) { alert(msg); },
+	});
 }
 
 function handleResults(results) {

@@ -1,6 +1,6 @@
 // Routines for location management page
 
-function clickSubmitAdd() {
+function addLocation() {
     locationName = document.getElementById('locationName').value;
     if (locationName == "") {
 	alert("You must enter a name for the new location");
@@ -18,14 +18,14 @@ function clickSubmitAdd() {
     }
 }
 
-function hiddenCheckboxClick(id) {
+function setLocationHidden(id) {
     return function() {
 	opener.setLocationHidden({locationId:id,locationHidden:this.checked?1:0},{});
 	return false;
     };
 }
 
-function changeLocationName(id) {
+function setLocationName(id) {
     return function() {
 	if (this.value == "") {
 	    alert("You cannot have a blank location name");
@@ -66,7 +66,7 @@ setLocation = function(locationDetails) {
     // Not in the table, so add a row
     var tbody = this.tBodies[0];
     var tr = document.createElement('tr');
-    tr.locationId = locationDetails.locationId;
+    tr.locationId = locationDetails.locationId
 
     // Location name textbox
     var nameTd = document.createElement('td');
@@ -76,9 +76,8 @@ setLocation = function(locationDetails) {
     if (window.opener.userType == 0) {
 	locationNameText.disabled = true;
     }
-    locationNameText.id = 'locationNameText'+locationDetails.locationId;
     locationNameText.onkeyup = blurOnReturnKey;
-    locationNameText.onchange = changeLocationName(locationDetails.locationId);
+    locationNameText.onchange = setLocationName(locationDetails.locationId);
     nameTd.appendChild(locationNameText);
     nameTd.setAttribute('sorttable_customkey', locationDetails.locationName);
     tr.appendChild(nameTd);
@@ -100,8 +99,7 @@ setLocation = function(locationDetails) {
     if (window.opener.userType == 0) {
 	hiddenCheckbox.disabled = true;
     }
-    hiddenCheckbox.id = 'hiddenCheckbox'+locationDetails.locationId;
-    hiddenCheckbox.onclick = hiddenCheckboxClick(locationDetails.locationId);
+    hiddenCheckbox.onclick = setLocationHidden(locationDetails.locationId);
     hiddenTd.appendChild(hiddenCheckbox);
     tr.appendChild(hiddenTd);
 
@@ -117,7 +115,7 @@ window.onload = function () {
 	// readonly
 	document.getElementById('addLocation').style.display = 'none';
     }
-    document.getElementById('locationName').onchange = clickSubmitAdd;
+    document.getElementById('locationName').onchange = addLocation;
     document.getElementById('locationName').onkeyup = blurOnReturnKey;
     document.getElementById('locationTable').setRow = setLocation;
     opener.getLocations();
