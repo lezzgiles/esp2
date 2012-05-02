@@ -29,6 +29,9 @@ if ($trace) {
 eval {
     my $command = $query->param('command');
 
+    my $objectType = "";
+    if ($command eq 'get') { $objectType = $query->param('type'); }
+
     #######################################
     # Make sure the user is approved to use the database
     my $database = $query->param('database');
@@ -257,7 +260,7 @@ eval {
 	}
 	push @returns, [ 'user', userDetails($dbh,$userId) ];
 
-    } elsif ($command eq 'getLocations') {
+    } elsif ($command eq 'get' and $objectType eq 'location') {
 	my $sth = $dbh->prepare("SELECT locationId,locationName,locationHidden FROM location ORDER BY locationName DESC");
 	$sth->execute;
 	while (my ($locationId,$locationName,$locationHidden) = $sth->fetchrow_array) {
@@ -267,7 +270,7 @@ eval {
 	    push @returns, [ 'error', $sth->err ];
 	}
 
-    } elsif ($command eq 'getBins') {
+    } elsif ($command eq 'get' and $objectType eq 'bin') {
 	my $sth = $dbh->prepare("SELECT binId,binName,binSlots,locationId,locationName,binHidden FROM bin LEFT JOIN location USING (locationId) ORDER BY binName DESC");
 	$sth->execute;
 	while (my ($binId,$binName,$binSlots,$locationId,$locationName,$binHidden) = $sth->fetchrow_array) {
@@ -277,7 +280,7 @@ eval {
 	    push @returns, [ 'error', $sth->err ];
 	}
 
-    } elsif ($command eq 'getUsers') {
+    } elsif ($command eq 'get' and $objectType eq 'user') {
 	if ($type < ADMIN) { push @returns, ['error','Must be an administrator to do this']; return }
 
 	my $sth = $dbh->prepare("SELECT userId,userName,userType,userHidden FROM user ORDER BY userName DESC");
@@ -311,7 +314,7 @@ eval {
 	# no return = success
 
     } else {
-	push @returns, [ 'error', "ESP api: unknown request: $command" ];
+	push @returns, [ 'error', "ESP api: unknown request: $command $objectType" ];
     }
 };
 if ($@) {

@@ -151,6 +151,7 @@ function setBin(binDetails) {
     locationOption.text = binDetails.locationName;
     locationOption.value = binDetails.locationId;
     locationSelect.name = 'locationSelect';
+    locationSelect.className = 'listof=location';
     locationSelect.add(locationOption);
     if (window.opener.userType == 0) {
 	locationSelect.disabled = true;

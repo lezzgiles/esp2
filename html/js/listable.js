@@ -1,12 +1,13 @@
-// Drive a select from a list of location
-// When the list gets focus, populate the list.  If the locations
+// Drive a select from a list of things
+// Set the class of the list to "listof=<type>", e.g. <select class="listof=location">...
+// When the list gets focus, populate the list.  If the things
 // have not yet been fetched, then fetch them and populate the list
 // on successful return.
 // - If the current selected value is zero, simply let the first item
 //   be the selected one, and remove the first item.
 // - If the current selected value is non-zero, make sure that stays
 //   selected, if possible.
-// - hide hidden locations.
+// - hide hidden things.
 
 
 // This is always called from a child window, so the top window is opener.
@@ -14,10 +15,13 @@
 listable = {
     init: function() {
 	forEach(document.getElementsByTagName('select'), function(select) {
-		if (select.className.search(/\blistable\b/) != -1) {
+		var result = /\blistof=(..*?)\b/.exec(select.className);
+		if (result) {
+		    var type = result[1];
+		    
 		    select.onkeyup = blurOnReturnKey;
 		    select.onfocus = function() {
-			listable.expandList(this,'location');
+			listable.expandList(this,type);
 		    };
 		}
 	    });
@@ -45,7 +49,7 @@ listable = {
 
 	} else {
 	    opener.esp[type] = {}
-	    opener.doit("getLocations",{},{
+	    opener.doit('get',{type:type},{
 		    success: function() {
 			listable.expandList(select,type);
 		    },
