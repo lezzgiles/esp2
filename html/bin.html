@@ -6,6 +6,7 @@ ESP: Bins
 <link rel="stylesheet" href="css/esp.css" type="text/css">
 <script src="js/utils.js"></script>
 <script src="js/sorttable.js"></script>
+<script src="js/listable.js"></script>
 <script src="js/hiddenRows.js"></script>
 <script src="js/bin.js"></script>
 </HEAD>
@@ -19,7 +20,7 @@ ESP: Bins
 <legend class="add">New Bin</legend>
 <label>Bin name:<input type="text" id="binName" size="40"></label><br />
 <label>Bin size:<input type="text" id="binSlots" size="5"></label> <i>Enter the number of spaces, use 0 for no limit.</i><br />
-<label>Bin location:<select id="binLocation"><option>Select one</option></select></label><br />
+<label>Bin location:<select id="binLocation" class="listable"><option>Select one</option></select></label><br />
 <input type="button" id="addBinSubmit" value="Add bin">
 </fieldset>
 </form>

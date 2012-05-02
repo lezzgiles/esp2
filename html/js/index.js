@@ -9,17 +9,17 @@ esp = {
 // Location handling
 
 function getLocations() {
-    if ('locations' in esp) {
-	forEach (esp.locations, tellLocation);
+    if ('location' in esp) {
+	forEach (esp.location, tellLocation);
     } else {
-	esp.locations = {};
+	esp.location = {};
 	doit("getLocations",{});
     }
 }
 
 // This handler is called after a doit("getLocations"), once for each location
 handle.location = function (locationDetails) {
-    esp.locations[locationDetails.locationId] = locationDetails;
+    esp.location[locationDetails.locationId] = locationDetails;
     tellLocation(locationDetails);
 }
 
@@ -134,23 +134,33 @@ function setBinName(binDetails,handlers) {
 function setBinLocation(binDetails,handlers) {
     doit('setBinLocation',binDetails,handlers);
 }
-function setLocationOptions() {
-    var select = this;
-    if ('locations' in esp) {
-	if (select.expanded) { return }
-	select.remove(0);
-	forEach(esp.locations,function(locationDetails) {
-		var option = document.createElement('option');
-		option.text = locationDetails.locationName;
-		option.value = locationDetails.locationId;
-		select.add(option);
+function setOptions(select,type) {
+    if (type in esp) {
+	// Save the current option so it can be restored after
+	// recreating the options.
+	var currentOptionValue = select.options[select.selectedIndex].value;
+	//alert("Current option value is "+currentOptionValue+" = "+select.options[select.selectedIndex].text);
+	
+	// Remove all options
+	while (select.options.length > 0) { select.remove(0); }
+
+	var firstOption = null;
+	forEach(esp[type],function(details) {
+		if (details[type+'Hidden'] == 0) {
+		    var option = document.createElement('option');
+		    option.text = details[type+'Name'];
+		    option.value = details[type+'Id'];
+		    option.selected = (option.value == currentOptionValue);
+		    select.add(option,firstOption);
+		    firstOption = option;
+		}
 	    });
-	select.expanded = true;
+
     } else {
-	esp.locations = {}
+	esp[type] = {}
 	doit("getLocations",{},{
 		success: function() {
-		    setLocationOptions.call(select);
+		    setOptions(select,type);
 		},
 		    });
     }

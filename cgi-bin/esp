@@ -168,7 +168,7 @@ eval {
 	$dbh->do("UPDATE bin SET binHidden = ? WHERE binId = ?",undef,$binHidden,$binId);
 	$dbh->commit;
 
-	push @returns, [ 'bin', binDetails($binId) ];
+	push @returns, [ 'bin', binDetails($dbh,$binId) ];
 
     } elsif ($command eq 'setUserHidden') {
 	if ($type < ADMIN) { push @returns, ['error','Must be an administrator to do this']; return }
@@ -210,7 +210,7 @@ eval {
 	if ($type <= READONLY) { push @returns, ['error','No permission']; return }
 
 	my $binId = $query->param('binId');
-	my $binName = $query->param('newName');
+	my $binName = $query->param('binName');
 
 	my ($count) = $dbh->selectrow_array("SELECT COUNT(*) FROM bin WHERE binName = ?",undef,$binName);
 	if ($count > 0) {
@@ -219,7 +219,7 @@ eval {
 	    $dbh->do("UPDATE bin SET binName = ? WHERE binId = ?",undef,$binName,$binId);
 	    $dbh->commit;
 	}
-	push @returns, [ 'bin', binDetails($binId) ];
+	push @returns, [ 'bin', binDetails($dbh,$binId) ];
 
     } elsif ($command eq 'setBinLocation') {
 	if ($type <= READONLY) { push @returns, ['error','No permission']; return }
@@ -230,7 +230,7 @@ eval {
 	$dbh->do("UPDATE bin SET locationId = ? WHERE binId = ?",undef,$locationId,$binId);
 	$dbh->commit;
 
-	push @returns, [ 'bin', binDetails($binId) ];
+	push @returns, [ 'bin', binDetails($dbh,$binId) ];
 
     } elsif ($command eq 'changeBinSlots') {
 	if ($type <= READONLY) { push @returns, ['error','No permission']; return }

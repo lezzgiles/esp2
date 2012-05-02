@@ -4,7 +4,7 @@ function addBin() {
     binName = document.getElementById('binName').value;
     binSlots = document.getElementById('binSlots').value;
     binLocationSelect = document.getElementById('binLocation');
-    binLocation = binLocationSelect.options[binLocationSelect.selectedIndex];
+    binLocation = binLocationSelect.options[binLocationSelect.selectedIndex].value;
     if (binName == "") {
 	alert("You must enter a name for the new bin");
     } else if (binSlots == "") {
@@ -82,7 +82,7 @@ function setBin(binDetails) {
 		// slots
 		row.cells[1].childNodes[0].value = binDetails.binSlots;
 		// location
-		var locationSelect = row.cells[2].childNode[1];
+		var locationSelect = row.cells[2].childNodes[0];
 		// Remove all the old options
 		while (locationSelect.options.length > 0) { locationSelect.remove(0) }
 		// Create a new option
@@ -94,14 +94,14 @@ function setBin(binDetails) {
 		// hidden
 		var showHidden = document.getElementById('binHideCheckbox').checked;
 		if (binDetails.binHidden == 1) {
-		    row.cells[2].childNodes[0].checked = true;
+		    row.cells[3].childNodes[0].checked = true;
 		    if (showHidden) {
 			row.style.display = 'table-row';
 		    } else {
 			row.style.display = 'none';
 		    }
 		} else {
-		    row.cells[2].childNodes[0].checked = false;
+		    row.cells[3].childNodes[0].checked = false;
 		    row.style.display = 'table-row';
 		}
 		
@@ -194,9 +194,9 @@ window.onload = function () {
 	// readonly
 	document.getElementById('addBin').style.display = 'none';
     }
-    document.getElementById('binLocation').onfocus = opener.setLocationOptions;
     document.getElementById('addBinSubmit').onclick = addBin;
     document.getElementById('binTable').setRow = setBin;
     opener.getBins();
     hiddenRows.init();
+    listable.init();
 }
