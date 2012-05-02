@@ -150,9 +150,9 @@ function setOptions(select,type) {
 		    var option = document.createElement('option');
 		    option.text = details[type+'Name'];
 		    option.value = details[type+'Id'];
-		    option.selected = (option.value == currentOptionValue);
 		    select.add(option,firstOption);
 		    firstOption = option;
+		    option.selected = (option.value == currentOptionValue);
 		}
 	    });
 
