@@ -1,0 +1,46 @@
+<HTML>
+<HEAD>
+<TITLE>
+ESP: Items
+</TITLE>
+<link rel="stylesheet" href="css/esp.css" type="text/css">
+<script src="js/utils.js"></script>
+<script src="js/sorttable.js"></script>
+<script src="js/hiddenRows.js"></script>
+<script src="js/item.js"></script>
+</HEAD>
+<BODY>
+<div class="mainbody">
+<h1>
+ESP: Items
+</h1>
+<form id="addItem">
+<fieldset class="add">
+<legend class="add">New Item</legend>
+<label>Manufacturer:<input type="text" id="itemMfr" size="40"></label><br />
+<label>Brand:<input type="text" id="itemBrand" size="40"></label><br />
+<label>Type:<input type="text" id="itemType" size="40"></label><br />
+<label>Description:<input type="text" id="itemDesc" size="40"></label><br />
+<label>Size:<input type="text" id="itemSize" size="40"></label><br />
+<input type="button" id="addItemSubmit" value="Add item">
+</fieldset>
+</form>
+<label>Show hidden items<input type="checkbox" id="itemHideCheckbox" class="hideCheckbox"></label>
+<table border=1 name="itemTable" id="itemTable" class="listthings sortable">
+<thead>
+<tr>
+  <th id="itemMfrHeader">Manufacturer</th>
+  <th id="itemBrandHeader">Brand</th>
+  <th id="itemTypeHeader">Type</th>
+  <th id="itemDescHeader">Description</th>
+  <th id="itemSizeHeader">Size</th>
+  <th class="sorttable_nosort">Hidden</th>
+</tr>
+</thead>
+<tbody>
+</tbody>
+</table>
+</div>
+
+</BODY>
+</HTML>

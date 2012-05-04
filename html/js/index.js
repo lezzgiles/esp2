@@ -136,6 +136,48 @@ function changeMyPassword(userDetails,handlers) {
 }
 
 ///////////////////////////////////////////////////////////////////////////////
+// Item handling
+
+function getItems() {
+    if ('items' in esp) {
+	forEach (esp.items, tellItem);
+    } else {
+	esp.items = {};
+	doit('get',{type:'item'});
+    }
+}
+
+// This handler is called after a doit("getItems"), once for each item
+handle.item = function (itemDetails) {
+    esp.items[itemDetails.itemId] = itemDetails;
+    tellItem(itemDetails);
+}
+
+function tellItem(itemDetails) {
+    forEach (esp.windows, function(window) {
+	    if (!window.document) { return; }
+	    forEach(window.document.getElementsByName('itemTable'), function(table) {
+		    table.setRow(itemDetails);
+		});
+	});
+}
+
+function addItem(itemDetails,handlers) {
+    doit('addItem',itemDetails,handlers);
+}
+
+function setItemHidden(itemDetails,handlers) {
+    itemDetails.type = 'item';
+    doit('setHidden',itemDetails,handlers);
+}
+
+function setItemMfr  (itemDetails,handlers) { doit('setItemMfr',itemDetails,handlers) }
+function setItemBrand(itemDetails,handlers) { doit('setItemBrand',itemDetails,handlers) }
+function setItemType (itemDetails,handlers) { doit('setItemType', itemDetails,handlers) }
+function setItemDesc (itemDetails,handlers) { doit('setItemDesc', itemDetails,handlers) }
+function setItemSize (itemDetails,handlers) { doit('setItemSize', itemDetails,handlers) }
+
+///////////////////////////////////////////////////////////////////////////////
 // Bin handling
 
 function getBins() {
@@ -197,6 +239,7 @@ function clickLogout() {
     username = '';
     password = '';
     document.getElementById('locationsButton').disabled = 'disabled';
+    document.getElementById('itemButton').disabled = 'disabled';
     document.getElementById('binsButton').disabled = 'disabled';
     document.getElementById('adminButton').disabled = 'disabled';
     document.getElementById('changeMyPasswordButton').disabled = 'disabled';
@@ -219,6 +262,7 @@ handle.login = function(myUserType) {
     userType = myUserType;
     // Login worked - enable the buttons
     document.getElementById('locationsButton').disabled = '';
+    document.getElementById('itemButton').disabled = '';
     document.getElementById('tagButton').disabled = '';
     document.getElementById('binsButton').disabled = '';
     if (userType == 2) {
@@ -246,6 +290,9 @@ window.onload = function() {
     }
     document.getElementById('binsButton').onclick = function() {
 	esp.windows.bin = window.open("bin.html","bins",specs);
+    }
+    document.getElementById('itemButton').onclick = function() {
+	esp.windows.bin = window.open("item.html","items",specs);
     }
     document.getElementById('adminButton').onclick = function() {
 	esp.windows.admin = window.open("admin.html","admin",specs);

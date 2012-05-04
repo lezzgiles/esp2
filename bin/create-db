@@ -43,6 +43,17 @@ CREATE TABLE tag (
     tagHidden ENUM(0,1) DEFAULT 0
 );
 
+CREATE TABLE item (
+    itemId INTEGER PRIMARY KEY,
+    itemMfr VARCHAR NOT NULL,
+    itemBrand VARCHAR NOT NULL,
+    itemType VARCHAR NOT NULL,
+    itemDesc VARCHAR NOT NULL,
+    itemSize VARCHAR NOT NULL,
+    itemHidden ENUM(0,1) DEFAULT 0,
+    UNIQUE (itemMfr,itemBrand,itemType,itemDesc,itemSize)
+);
+
 !
 
 # userType is..

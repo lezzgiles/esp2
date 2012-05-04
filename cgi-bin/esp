@@ -334,6 +334,52 @@ eval {
 	}
 
     #######################################
+    # Item
+
+    } elsif ($command eq 'addItem') {
+	if ($type < ADMIN) { push @returns, ['error','Must be an administrator to do this']; return }
+
+	my $itemMfr = $query->param('newMfr');
+	my $itemBrand = $query->param('newBrand');
+	my $itemType = $query->param('newType');
+	my $itemDesc = $query->param('newDesc');
+	my $itemSize = $query->param('newSize');
+
+	my ($count) = $dbh->selectrow_array("SELECT COUNT(*) FROM item WHERE itemMfr = ? AND itemBrand = ? AND itemType = ? AND itemDesc = ? AND itemSize = ?",undef,$itemMfr,$itemBrand,$itemType,$itemDesc,$itemSize);
+	if ($count > 0) {
+	    push @returns, [ 'error', "Item \"$itemMfr $itemBrand $itemType $itemDesc $itemSize\" already exists\n" ];
+	} else {
+	    $dbh->do("INSERT INTO item (itemMfr,itemBrand,itemType,itemDesc,itemSize) VALUES (?,?,?,?,?)",undef,$itemMfr,$itemBrand,$itemType,$itemDesc,$itemSize);
+	    my $itemId = $dbh->last_insert_id(undef,undef,undef,undef);
+	    $dbh->commit;
+	    push @returns, details($dbh,'item',$itemId);
+	}
+
+    } elsif ($command eq 'setItemField') {
+	if ($type < ADMIN) { push @returns, ['error','Must be an administrator to do this']; return }
+
+	my $itemId = $query->param('itemId');
+	my $fieldName = $query->param('fieldName');
+	my $fieldValue = $query->param($fieldName);
+
+	$dbh->do("UPDATE item SET $fieldName = ? WHERE itemId = ?",undef,$fieldValue,$itemId);
+	$dbh->commit;
+
+	push @returns, details($dbh,'item',$itemId);
+
+    } elsif ($command eq 'get' and $objectType eq 'item') {
+	if ($type < ADMIN) { push @returns, ['error','Must be an administrator to do this']; return }
+
+	my $sth = $dbh->prepare("SELECT itemId,itemMfr,itemBrand,itemType,itemDesc,itemSize,itemHidden FROM item ORDER BY itemMfr+\" \"+itemBrand+\" \"+itemType+\" \"+itemDesc+\" \"+itemSize DESC");
+	$sth->execute;
+	while (my $details = $sth->fetchrow_hashref) {
+	    push @returns, [ 'item', $details ];
+	}
+	if ($sth->err) {
+	    push @returns, [ 'error', $sth->err ];
+	}
+
+    #######################################
     # Password stuff
 
     } elsif ($command eq 'changeMyPassword') {
@@ -389,13 +435,11 @@ sub details {
 	    $dbh->selectrow_hashref("SELECT binId,binName,binSlots,binHidden,locationId,locationName FROM bin LEFT JOIN location USING (locationId) WHERE binId = ?", undef, $id);
 	return [ 'bin', $details ];
     }
-
     if ($objectType eq 'user') {
 	my $details =
 	    $dbh->selectrow_hashref("SELECT userId,userName,userType,userHidden FROM user WHERE userId = ?",undef,$id);
 	return [ 'user', $details ];
     }
-
     if ($objectType eq 'location') {
 	my $details =
 	    $dbh->selectrow_hashref("SELECT locationId,locationName,locationHidden FROM location WHERE locationId = ?",undef,$id);
@@ -406,4 +450,10 @@ sub details {
 	    $dbh->selectrow_hashref("SELECT tagId,tagName,tagHidden FROM tag WHERE tagId = ?",undef,$id);
 	return [ 'tag', $details ];
     }
+    if ($objectType eq 'item') {
+	my $details =
+	    $dbh->selectrow_hashref("SELECT itemId,itemMfr,itemBrand,itemType,itemDesc,itemSize,itemHidden FROM item WHERE itemId = ?",undef,$id);
+	return [ 'item', $details ];
+    }
+
 }
