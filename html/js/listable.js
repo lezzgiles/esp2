@@ -18,13 +18,15 @@ listable = {
 		var result = /\blistof=(..*?)\b/.exec(select.className);
 		if (result) {
 		    var type = result[1];
-		    
+		    listable.setupSelect(select,type);
+		}
+	    });
+    },
+    setupSelect: function(select,type) {
 		    select.onkeyup = blurOnReturnKey;
 		    select.onfocus = function() {
 			listable.expandList(this,type);
 		    };
-		}
-	    });
     },
     expandList: function(select,type) {
 	if (type in opener.esp) {

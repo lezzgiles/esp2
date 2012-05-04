@@ -1,0 +1,35 @@
+<HTML>
+<HEAD>
+<TITLE>
+ESP: Tags
+</TITLE>
+<link rel="stylesheet" href="css/esp.css" type="text/css">
+<script src="js/utils.js"></script>
+<script src="js/sorttable.js"></script>
+<script src="js/hiddenRows.js"></script>
+<script src="js/tag.js"></script>
+</HEAD>
+<BODY>
+<div class="mainbody">
+<h1>
+ESP: Tags
+</h1>
+<form id="addTag">
+<fieldset class="add">
+<legend class="add">New Tag</legend>
+<i>Enter a new tag name and hit <b>enter</b> to add a tag</i><br />
+<label>Tag name:<input type="text" id="tagName" size="40"></label><br />
+</fieldset>
+</form>
+<label>Show hidden tags<input type="checkbox" id="tagHideCheckbox" class="hideCheckbox"></label>
+<table border=1 name="tagTable" id="tagTable" class="listthings sortable">
+<thead>
+<tr><th id="tagNameHeader">Tag name</th><th class="sorttable_nosort">Hidden</th></tr>
+</thead>
+<tbody>
+</tbody>
+</table>
+</div>
+
+</BODY>
+</HTML>

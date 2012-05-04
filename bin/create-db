@@ -36,6 +36,13 @@ CREATE TABLE bin (
     locationId INTEGER NOT NULL REFERENCES location(locationId)
 );
 INSERT INTO bin (binName,binSlots,locationId) VALUES ('arrived',0,1);
+
+CREATE TABLE tag (
+    tagId INTEGER PRIMARY KEY,
+    tagName VARCHAR NOT NULL UNIQUE,
+    tagHidden ENUM(0,1) DEFAULT 0
+);
+
 !
 
 # userType is..

@@ -3,6 +3,8 @@
 use warnings;
 use strict;
 
+require 5.10.0;
+
 use CGI;
 use DBI;
 use FindBin qw($Bin);
@@ -30,7 +32,7 @@ eval {
     my $command = $query->param('command');
 
     my $objectType = "";
-    if ($command eq 'get') { $objectType = $query->param('type'); }
+    if ($command eq 'get' || $command eq 'setHidden') { $objectType = $query->param('type'); }
 
     #######################################
     # Make sure the user is approved to use the database
@@ -39,6 +41,7 @@ eval {
     my $password = $query->param('password');
     my $queryApiVersion = $query->param('apiVersion');
 
+    #######################################
     # Get the api version number from the javascript file
     my $apiVersion;
     open V, "$Bin/../html/js/utils.js" or do {
@@ -54,6 +57,8 @@ eval {
 	return;
     }
 
+    #######################################
+    # Read the config file to find the database
     # Config file is a list of pairs of lines, with database name and directory
     open CONFIG, "$Bin/config" or die "Cannot open config file, $!\n";
     my %config = map { chomp; $_ } <CONFIG>;
@@ -100,8 +105,31 @@ eval {
 	return;
     }
 
+    #######################################
     if ($command eq 'login') {
 	push @returns, [ 'login',$type ];
+
+    #######################################
+    # Hidden stuff
+
+    } elsif ($command eq 'setHidden') {
+	if ($type <= READONLY) { push @returns, ['error','No permission']; return }
+
+	my $id = $query->param($objectType.'Id');
+	my $hidden = $query->param($objectType.'Hidden');
+
+	# make sure that the type is one we know about
+	if (! $objectType ~~ [qw(location user bin tag)]) {
+	    push @returns, [ 'error', "Unknown object type $objectType" ];
+	    return;
+	}
+	    
+	$dbh->do("UPDATE $objectType SET ${objectType}Hidden = ? WHERE ${objectType}Id = ?",undef,$hidden,$id);
+	$dbh->commit;
+	push @returns, details($dbh,$objectType,$id);
+
+    #######################################
+    # Location
 
     } elsif ($command eq 'addLocation') {
 	if ($type <= READONLY) { push @returns, ['error','No permission']; return }
@@ -113,8 +141,79 @@ eval {
 	    $dbh->do("INSERT INTO location (locationName) VALUES (?)",undef,$locationName);
 	    my $locationId = $dbh->last_insert_id(undef,undef,undef,undef);
 	    $dbh->commit;
-	    push @returns, [ 'location', locationDetails($dbh,$locationId) ];
+	    push @returns, details($dbh,'location',$locationId);
 	}
+
+    } elsif ($command eq 'setLocationName') {
+	if ($type <= READONLY) { push @returns, ['error','No permission']; return }
+
+	my $locationId = $query->param('locationId');
+	my $newName = $query->param('locationName');
+
+	my ($count) = $dbh->selectrow_array("SELECT COUNT(*) FROM location WHERE locationName = ?",undef,$newName);
+	if ($count > 0) {
+	    push @returns, [ 'error', "Location $newName already exists\n" ];
+	} else {
+	    $dbh->do("UPDATE location SET locationName = ? WHERE locationId = ?",undef,$newName,$locationId);
+	    $dbh->commit;
+	}
+	push @returns, details($dbh,'location',$locationId);
+
+
+    } elsif ($command eq 'get' and $objectType eq 'location') {
+	my $sth = $dbh->prepare("SELECT locationId,locationName,locationHidden FROM location ORDER BY locationName DESC");
+	$sth->execute;
+	while (my $details = $sth->fetchrow_hashref) {
+	    push @returns, [ 'location', $details ];
+	}
+	if ($sth->err) {
+	    push @returns, [ 'error', $sth->err ];
+	}
+
+    #######################################
+    # Tag
+
+    } elsif ($command eq 'addTag') {
+	if ($type <= READONLY) { push @returns, ['error','No permission']; return }
+	my $tagName = $query->param('tagName');
+	my ($count) = $dbh->selectrow_array("SELECT COUNT(*) FROM tag WHERE tagName = ?",undef,$tagName);
+	if ($count > 0) {
+	    push @returns, [ 'error', "Tag $tagName already exists\n" ];
+	} else {
+	    $dbh->do("INSERT INTO tag (tagName) VALUES (?)",undef,$tagName);
+	    my $tagId = $dbh->last_insert_id(undef,undef,undef,undef);
+	    $dbh->commit;
+	    push @returns, details($dbh,'tag',$tagId);
+	}
+
+    } elsif ($command eq 'setTagName') {
+	if ($type <= READONLY) { push @returns, ['error','No permission']; return }
+
+	my $tagId = $query->param('tagId');
+	my $newName = $query->param('tagName');
+
+	my ($count) = $dbh->selectrow_array("SELECT COUNT(*) FROM tag WHERE tagName = ?",undef,$newName);
+	if ($count > 0) {
+	    push @returns, [ 'error', "Tag $newName already exists\n" ];
+	} else {
+	    $dbh->do("UPDATE tag SET tagName = ? WHERE tagId = ?",undef,$newName,$tagId);
+	    $dbh->commit;
+	}
+	push @returns, details($dbh,'tag',$tagId);
+
+
+    } elsif ($command eq 'get' and $objectType eq 'tag') {
+	my $sth = $dbh->prepare("SELECT tagId,tagName,tagHidden FROM tag ORDER BY tagName DESC");
+	$sth->execute;
+	while (my $details = $sth->fetchrow_hashref) {
+	    push @returns, [ 'tag', $details ];
+	}
+	if ($sth->err) {
+	    push @returns, [ 'error', $sth->err ];
+	}
+
+    #######################################
+    # Bin
 
     } elsif ($command eq 'addBin') {
 	if ($type <= READONLY) { push @returns, ['error','No permission']; return }
@@ -128,8 +227,57 @@ eval {
 	    $dbh->do("INSERT INTO bin (binName,binSlots,locationId) VALUES (?,?,?)",undef,$binName,$binSlots,$locationId);
 	    my $binId = $dbh->last_insert_id(undef,undef,undef,undef);
 	    $dbh->commit;
-	    push @returns, [ 'bin', binDetails($dbh,$binId) ];
+	    push @returns, details($dbh,'bin',$binId);
 	}
+
+    } elsif ($command eq 'setBinName') {
+	if ($type <= READONLY) { push @returns, ['error','No permission']; return }
+
+	my $binId = $query->param('binId');
+	my $binName = $query->param('binName');
+
+	my ($count) = $dbh->selectrow_array("SELECT COUNT(*) FROM bin WHERE binName = ?",undef,$binName);
+	if ($count > 0) {
+	    push @returns, [ 'error', "Bin $binName already exists\n" ];
+	} else {
+	    $dbh->do("UPDATE bin SET binName = ? WHERE binId = ?",undef,$binName,$binId);
+	    $dbh->commit;
+	}
+	push @returns, details($dbh,'bin',$binId);
+
+    } elsif ($command eq 'setBinLocation') {
+	if ($type <= READONLY) { push @returns, ['error','No permission']; return }
+
+	my $binId = $query->param('binId');
+	my $locationId = $query->param('locationId');
+
+	$dbh->do("UPDATE bin SET locationId = ? WHERE binId = ?",undef,$locationId,$binId);
+	$dbh->commit;
+
+	push @returns, details($dbh,'bin',$binId);
+
+    } elsif ($command eq 'changeBinSlots') {
+	if ($type <= READONLY) { push @returns, ['error','No permission']; return }
+
+	my $binId = $query->param('binId');
+	my $newSlots = $query->param('newSlots');
+
+	$dbh->do("UPDATE bin SET binSlots = ? WHERE binId = ?",undef,$newSlots,$binId);
+	$dbh->commit;
+	push @returns, details($dbh, 'bin', $binId);
+
+    } elsif ($command eq 'get' and $objectType eq 'bin') {
+	my $sth = $dbh->prepare("SELECT binId,binName,binSlots,locationId,locationName,binHidden FROM bin LEFT JOIN location USING (locationId) ORDER BY binName DESC");
+	$sth->execute;
+	while (my $details = $sth->fetchrow_hashref) {
+	    push @returns, [ 'bin', $details ];
+	}
+	if ($sth->err) {
+	    push @returns, [ 'error', $sth->err ];
+	}
+
+    #######################################
+    # User
 
     } elsif ($command eq 'addUser') {
 	if ($type < ADMIN) { push @returns, ['error','Must be an administrator to do this']; return }
@@ -145,44 +293,8 @@ eval {
 	    $dbh->do("INSERT INTO user (userName,userPassword,userType) VALUES (?,?,?)",undef,$userName,$userPassword,$userType);
 	    my $userId = $dbh->last_insert_id(undef,undef,undef,undef);
 	    $dbh->commit;
-	    push @returns, [ 'user', userDetails($dbh,$userId) ];
+	    push @returns, details($dbh,'user',$userId);
 	}
-
-    } elsif ($command eq 'setLocationHidden') {
-	if ($type <= READONLY) { push @returns, ['error','No permission']; return }
-
-	my $locationId = $query->param('locationId');
-	my $locationHidden = $query->param('locationHidden');
-
-	# Get the name so we can pass back the full record
-	my $sth = $dbh->prepare("SELECT locationName FROM location WHERE locationId = ?",undef);
-	$sth->execute($locationId);
-	my ($locationName) = $sth->fetchrow_array;
-
-	$dbh->do("UPDATE location SET locationHidden = ? WHERE locationId = ?",undef,$locationHidden,$locationId);
-	$dbh->commit;
-	push @returns, [ 'location', locationDetails($dbh,$locationId) ];
-
-    } elsif ($command eq 'setBinHidden') {
-	if ($type <= READONLY) { push @returns, ['error','No permission']; return }
-
-	my $binId = $query->param('binId');
-	my $binHidden = $query->param('binHidden');
-	$dbh->do("UPDATE bin SET binHidden = ? WHERE binId = ?",undef,$binHidden,$binId);
-	$dbh->commit;
-
-	push @returns, [ 'bin', binDetails($dbh,$binId) ];
-
-    } elsif ($command eq 'setUserHidden') {
-	if ($type < ADMIN) { push @returns, ['error','Must be an administrator to do this']; return }
-
-	my $userId = $query->param('userId');
-	my $userHidden = $query->param('userHidden');
-
-	$dbh->do("UPDATE user SET userHidden = ? WHERE userId = ?",undef,$userHidden,$userId);
-	$dbh->commit;
-
-	push @returns, [ 'user', userDetails($dbh,$userId) ];
 
     } elsif ($command eq 'setUserType') {
 	if ($type < ADMIN) { push @returns, ['error','Must be an administrator to do this']; return }
@@ -192,58 +304,7 @@ eval {
 	$dbh->do("UPDATE user SET userType = ? WHERE userId = ?",undef,$userType,$userId);
 	$dbh->commit;
 
-	push @returns, [ 'user', userDetails($dbh,$userId) ];
-
-    } elsif ($command eq 'setLocationName') {
-	if ($type <= READONLY) { push @returns, ['error','No permission']; return }
-
-	my $locationId = $query->param('locationId');
-	my $newName = $query->param('locationName');
-
-	my ($count) = $dbh->selectrow_array("SELECT COUNT(*) FROM location WHERE locationName = ?",undef,$newName);
-	if ($count > 0) {
-	    push @returns, [ 'error', "Location $newName already exists\n" ];
-	} else {
-	    $dbh->do("UPDATE location SET locationName = ? WHERE locationId = ?",undef,$newName,$locationId);
-	    $dbh->commit;
-	}
-	push @returns, [ 'location', locationDetails($dbh,$locationId) ];
-
-    } elsif ($command eq 'setBinName') {
-	if ($type <= READONLY) { push @returns, ['error','No permission']; return }
-
-	my $binId = $query->param('binId');
-	my $binName = $query->param('binName');
-
-	my ($count) = $dbh->selectrow_array("SELECT COUNT(*) FROM bin WHERE binName = ?",undef,$binName);
-	if ($count > 0) {
-	    push @returns, [ 'error', "Bin $binName already exists\n" ];
-	} else {
-	    $dbh->do("UPDATE bin SET binName = ? WHERE binId = ?",undef,$binName,$binId);
-	    $dbh->commit;
-	}
-	push @returns, [ 'bin', binDetails($dbh,$binId) ];
-
-    } elsif ($command eq 'setBinLocation') {
-	if ($type <= READONLY) { push @returns, ['error','No permission']; return }
-
-	my $binId = $query->param('binId');
-	my $locationId = $query->param('locationId');
-
-	$dbh->do("UPDATE bin SET locationId = ? WHERE binId = ?",undef,$locationId,$binId);
-	$dbh->commit;
-
-	push @returns, [ 'bin', binDetails($dbh,$binId) ];
-
-    } elsif ($command eq 'changeBinSlots') {
-	if ($type <= READONLY) { push @returns, ['error','No permission']; return }
-
-	my $binId = $query->param('binId');
-	my $newSlots = $query->param('newSlots');
-
-	$dbh->do("UPDATE bin SET binSlots = ? WHERE binId = ?",undef,$newSlots,$binId);
-	$dbh->commit;
-	push @returns, [ 'binSlots', binDetails($dbh, $binId) ];
+	push @returns, details($dbh,'user',$userId);
 
     } elsif ($command eq 'setUserName') {
 	if ($type < ADMIN) { push @returns, ['error','Must be an administrator to do this']; return }
@@ -258,39 +319,22 @@ eval {
 	    $dbh->do("UPDATE user SET userName = ? WHERE userId = ?",undef,$newName,$userId);
 	    $dbh->commit;
 	}
-	push @returns, [ 'user', userDetails($dbh,$userId) ];
-
-    } elsif ($command eq 'get' and $objectType eq 'location') {
-	my $sth = $dbh->prepare("SELECT locationId,locationName,locationHidden FROM location ORDER BY locationName DESC");
-	$sth->execute;
-	while (my ($locationId,$locationName,$locationHidden) = $sth->fetchrow_array) {
-	    push @returns, [ 'location', { locationId=>$locationId, locationName=>$locationName, locationHidden=>$locationHidden } ];
-	}
-	if ($sth->err) {
-	    push @returns, [ 'error', $sth->err ];
-	}
-
-    } elsif ($command eq 'get' and $objectType eq 'bin') {
-	my $sth = $dbh->prepare("SELECT binId,binName,binSlots,locationId,locationName,binHidden FROM bin LEFT JOIN location USING (locationId) ORDER BY binName DESC");
-	$sth->execute;
-	while (my ($binId,$binName,$binSlots,$locationId,$locationName,$binHidden) = $sth->fetchrow_array) {
-	    push @returns, [ 'bin', { binId=>$binId,binName=>$binName,binSlots=>$binSlots,locationId=>$locationId,locationName=>$locationName,binHidden=>$binHidden } ];
-	}
-	if ($sth->err) {
-	    push @returns, [ 'error', $sth->err ];
-	}
+	push @returns, details($dbh,'user',$userId);
 
     } elsif ($command eq 'get' and $objectType eq 'user') {
 	if ($type < ADMIN) { push @returns, ['error','Must be an administrator to do this']; return }
 
 	my $sth = $dbh->prepare("SELECT userId,userName,userType,userHidden FROM user ORDER BY userName DESC");
 	$sth->execute;
-	while (my ($userId,$userName,$userType,$userHidden) = $sth->fetchrow_array) {
-	    push @returns, [ 'user', { userId=>$userId, userName=>$userName,userType=>$userType,userHidden=>$userHidden } ];
+	while (my $details = $sth->fetchrow_hashref) {
+	    push @returns, [ 'user', $details ];
 	}
 	if ($sth->err) {
 	    push @returns, [ 'error', $sth->err ];
 	}
+
+    #######################################
+    # Password stuff
 
     } elsif ($command eq 'changeMyPassword') {
 	my $oldPassword = $query->param('oldPassword');
@@ -313,6 +357,7 @@ eval {
 	$dbh->commit();
 	# no return = success
 
+    #######################################
     } else {
 	push @returns, [ 'error', "ESP api: unknown request: $command $objectType" ];
     }
@@ -334,26 +379,31 @@ print "\n";
 print encode_json(\@returns);
 
 ###############################################################################
-sub binDetails {
+sub details {
     my $dbh = shift;
-    my $binId = shift;
-    my ($binName,$binSlots,$binHidden,$locationId,$locationName) =
-	$dbh->selectrow_array("SELECT binName,binSlots,binHidden,locationId,locationName FROM bin LEFT JOIN location USING (locationId) WHERE binId = ?", undef, $binId);
-    return { binId=>$binId, binName=>$binName, binSlots=>$binSlots, binHidden=>$binHidden, locationId=>$locationId, locationName=>$locationName };
-}
+    my $objectType = shift;
+    my $id = shift;
+    
+    if ($objectType eq 'bin') {
+	my $details =
+	    $dbh->selectrow_hashref("SELECT binId,binName,binSlots,binHidden,locationId,locationName FROM bin LEFT JOIN location USING (locationId) WHERE binId = ?", undef, $id);
+	return [ 'bin', $details ];
+    }
 
-sub userDetails {
-    my $dbh = shift;
-    my $userId = shift;
-    my ($userName,$userType,$userHidden) =
-	$dbh->selectrow_array("SELECT userName,userType,userHidden FROM user WHERE userId = ?",undef,$userId);
-    return { userId=>$userId, userName=>$userName, userType=>$userType, userHidden=>$userHidden };
-}
+    if ($objectType eq 'user') {
+	my $details =
+	    $dbh->selectrow_hashref("SELECT userId,userName,userType,userHidden FROM user WHERE userId = ?",undef,$id);
+	return [ 'user', $details ];
+    }
 
-sub locationDetails {
-    my $dbh = shift;
-    my $locationId = shift;
-    my ($locationName,$locationHidden) = 
-	$dbh->selectrow_array("SELECT locationName,locationHidden FROM location WHERE locationId = ?",undef,$locationId);
-    return { locationName=>$locationName,locationId=>$locationId,locationHidden=>$locationHidden };
+    if ($objectType eq 'location') {
+	my $details =
+	    $dbh->selectrow_hashref("SELECT locationId,locationName,locationHidden FROM location WHERE locationId = ?",undef,$id);
+	return [ 'location', $details ];
+    }
+    if ($objectType eq 'tag') {
+	my $details =
+	    $dbh->selectrow_hashref("SELECT tagId,tagName,tagHidden FROM tag WHERE tagId = ?",undef,$id);
+	return [ 'tag', $details ];
+    }
 }

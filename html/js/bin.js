@@ -159,6 +159,7 @@ function setBin(binDetails) {
 	locationSelect.onfocus = setLocationOptions;
     }
     locationSelect.onchange = setBinLocation(binDetails.binId);
+    listable.setupSelect(locationSelect,'location');
     locationTd.appendChild(locationSelect);
     tr.appendChild(locationTd);
 

@@ -37,11 +37,52 @@ function addLocation(locationDetails,handlers) {
 }
 
 function setLocationHidden(locationDetails,handlers) {
-    doit('setLocationHidden',locationDetails,handlers);
+    locationDetails.type = 'location';
+    doit('setHidden',locationDetails,handlers);
 }
 
 function setLocationName(locationDetails,handlers) {
     doit('setLocationName',locationDetails,handlers);
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// Tag handling
+
+function getTags() {
+    if ('tag' in esp) {
+	forEach (esp.tag, tellTag);
+    } else {
+	esp.tag = {};
+	doit('get',{type:'tag'});
+    }
+}
+
+// This handler is called after a doit("getTags"), once for each tag
+handle.tag = function (tagDetails) {
+    esp.tag[tagDetails.tagId] = tagDetails;
+    tellTag(tagDetails);
+}
+
+function tellTag(tagDetails) {
+    forEach (esp.windows, function(window) {
+	    if (!window.document) { return; }
+	    forEach(window.document.getElementsByName('tagTable'), function(table) {
+		    table.setRow(tagDetails);
+		});
+	});
+}
+
+function addTag(tagDetails,handlers) {
+    doit('addTag',tagDetails,handlers);
+}
+
+function setTagHidden(tagDetails,handlers) {
+    tagDetails.type = 'tag';
+    doit('setHidden',tagDetails,handlers);
+}
+
+function setTagName(tagDetails,handlers) {
+    doit('setTagName',tagDetails,handlers);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -76,7 +117,8 @@ function addUser(userDetails,handlers) {
 }
 
 function setUserHidden(userDetails,handlers) {
-    doit('setUserHidden',userDetails,handlers);
+    userDetails.type = 'user';
+    doit('setHidden',userDetails,handlers);
 }
 
 function setUserType(userDetails,handlers) {
@@ -125,7 +167,8 @@ function addBin(binDetails,handlers) {
 }
 
 function setBinHidden(binDetails,handlers) {
-    doit('setBinHidden',binDetails,handlers);
+    binDetails.type = 'bin';
+    doit('setHidden',binDetails,handlers);
 }
 
 function setBinName(binDetails,handlers) {
@@ -176,6 +219,7 @@ handle.login = function(myUserType) {
     userType = myUserType;
     // Login worked - enable the buttons
     document.getElementById('locationsButton').disabled = '';
+    document.getElementById('tagButton').disabled = '';
     document.getElementById('binsButton').disabled = '';
     if (userType == 2) {
 	document.getElementById('adminButton').disabled = '';
@@ -205,6 +249,9 @@ window.onload = function() {
     }
     document.getElementById('adminButton').onclick = function() {
 	esp.windows.admin = window.open("admin.html","admin",specs);
+    }
+    document.getElementById('tagButton').onclick = function() {
+	esp.windows.tag = window.open("tag.html","tag",specs);
     }
     document.getElementById('changeMyPasswordButton').onclick = function() {
 	esp.windows.changeMyPassword = window.open("changeMyPassword.html","changeMyPassword",specs+',height=240');
