@@ -30,9 +30,9 @@ listable = {
     },
     expandList: function(select,type) {
 	if (type in opener.esp) {
-	    // Save the current option so it can be restored after
+	    // Save the current option values so they can be restored after
 	    // recreating the options.
-	    var currentOptionValue = select.options[select.selectedIndex].value;
+	    var selectedValues = select.selectedValues();
 	
 	    // Remove all options
 	    while (select.options.length > 0) { select.remove(0); }
@@ -45,7 +45,7 @@ listable = {
 			option.value = details[type+'Id'];
 			select.add(option,firstOption);
 			firstOption = option;
-			option.selected = (option.value == currentOptionValue);
+			option.selected = (option.value in selectedValues);
 		    }
 		});
 

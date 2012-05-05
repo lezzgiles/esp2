@@ -1,7 +1,7 @@
 // Routines for tag management page
 
 function addTag() {
-    tagName = document.getElementById('tagName').value;
+    var tagName = document.getElementById('tagName').value;
     if (tagName == "") {
 	alert("You must enter a name for the new tag");
     } else {

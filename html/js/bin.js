@@ -1,10 +1,10 @@
 // Routines for bin management page
 
 function addBin() {
-    binName = document.getElementById('binName').value;
-    binSlots = document.getElementById('binSlots').value;
-    binLocationSelect = document.getElementById('binLocation');
-    binLocation = binLocationSelect.options[binLocationSelect.selectedIndex].value;
+    var binName = document.getElementById('binName').value;
+    var binSlots = document.getElementById('binSlots').value;
+    var binLocationSelect = document.getElementById('binLocation');
+    var binLocation = binLocationSelect.options[binLocationSelect.selectedIndex].value;
     if (binName == "") {
 	alert("You must enter a name for the new bin");
     } else if (binSlots == "") {
@@ -56,10 +56,6 @@ function setBinSlots(id) {
 	}
 	return false;
     }
-}
-
-function setLocationOptions() {
-    // set the list of options for this from opener.esp.locations
 }
 
 function setBinLocation(id) {
@@ -153,11 +149,7 @@ function setBin(binDetails) {
     locationSelect.name = 'locationSelect';
     locationSelect.className = 'listof=location';
     locationSelect.add(locationOption);
-    if (window.opener.userType == 0) {
-	locationSelect.disabled = true;
-    } else {
-	locationSelect.onfocus = setLocationOptions;
-    }
+    locationSelect.disabled = (window.opener.userType == 0);
     locationSelect.onchange = setBinLocation(binDetails.binId);
     listable.setupSelect(locationSelect,'location');
     locationTd.appendChild(locationSelect);

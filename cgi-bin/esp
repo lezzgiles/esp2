@@ -344,6 +344,7 @@ eval {
 	my $itemType = $query->param('newType');
 	my $itemDesc = $query->param('newDesc');
 	my $itemSize = $query->param('newSize');
+	my @itemTags = split(',',$query->param('newTags'));
 
 	my ($count) = $dbh->selectrow_array("SELECT COUNT(*) FROM item WHERE itemMfr = ? AND itemBrand = ? AND itemType = ? AND itemDesc = ? AND itemSize = ?",undef,$itemMfr,$itemBrand,$itemType,$itemDesc,$itemSize);
 	if ($count > 0) {
@@ -351,6 +352,9 @@ eval {
 	} else {
 	    $dbh->do("INSERT INTO item (itemMfr,itemBrand,itemType,itemDesc,itemSize) VALUES (?,?,?,?,?)",undef,$itemMfr,$itemBrand,$itemType,$itemDesc,$itemSize);
 	    my $itemId = $dbh->last_insert_id(undef,undef,undef,undef);
+	    foreach my $tagId (@itemTags) {
+		$dbh->do("INSERT INTO itemTag (itemId,tagId) VALUES (?,?)",undef,$itemId,$tagId);
+	    }
 	    $dbh->commit;
 	    push @returns, details($dbh,'item',$itemId);
 	}
@@ -363,6 +367,21 @@ eval {
 	my $fieldValue = $query->param($fieldName);
 
 	$dbh->do("UPDATE item SET $fieldName = ? WHERE itemId = ?",undef,$fieldValue,$itemId);
+	$dbh->commit;
+
+	push @returns, details($dbh,'item',$itemId);
+
+    } elsif ($command eq 'setItemTags') {
+	if ($type < ADMIN) { push @returns, ['error','Must be an administrator to do this']; return }
+
+	my $itemId = $query->param('itemId');
+	my @itemTags = split(',',$query->param('itemTags'));
+
+	$dbh->do("DELETE FROM itemTag WHERE itemId = ?",undef,$itemId);
+	foreach my $tagId (@itemTags) {
+	    $dbh->do("INSERT INTO itemTag (itemId,tagId) VALUES (?,?)",undef,$itemId,$tagId);
+	}
+
 	$dbh->commit;
 
 	push @returns, details($dbh,'item',$itemId);

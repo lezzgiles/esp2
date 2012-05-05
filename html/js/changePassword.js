@@ -1,9 +1,9 @@
 // Routines for changePassword page
 
 function clickChangePassword() {
-    changeUserId = window.opener.changePasswordUserId;
-    newPassword = document.getElementById('newPasswordText').value;
-    newPassword2 = document.getElementById('newPassword2Text').value;
+    var changeUserId = window.opener.changePasswordUserId;
+    var newPassword = document.getElementById('newPasswordText').value;
+    var newPassword2 = document.getElementById('newPassword2Text').value;
 
     if (newPassword == "") {
 	alert("You must enter a password");

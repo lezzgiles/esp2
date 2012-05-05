@@ -1,7 +1,7 @@
 // Routines for location management page
 
 function addLocation() {
-    locationName = document.getElementById('locationName').value;
+    var locationName = document.getElementById('locationName').value;
     if (locationName == "") {
 	alert("You must enter a name for the new location");
     } else {

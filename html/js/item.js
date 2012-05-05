@@ -1,18 +1,19 @@
 // Routines for item page
 
 function addItem() {
-    itemMfr = document.getElementById('itemMfr').value;
-    itemBrand = document.getElementById('itemBrand').value;
-    itemType = document.getElementById('itemType').value;
-    itemDesc = document.getElementById('itemDesc').value;
-    itemSize = document.getElementById('itemSize').value;
+    var itemMfr = document.getElementById('itemMfr').value;
+    var itemBrand = document.getElementById('itemBrand').value;
+    var itemType = document.getElementById('itemType').value;
+    var itemDesc = document.getElementById('itemDesc').value;
+    var itemSize = document.getElementById('itemSize').value;
+    var itemTags = Object.keys(document.getElementById('itemTags').selectedValues()).join();
     if (itemMfr == "") {
 	alert("You must enter a manufacturer name for the new item");
     } else if (itemDesc == "") {
 	alert("You must enter a description for the new item");
 	return;
     } else {
-	opener.addItem({newMfr:itemMfr,newBrand:itemBrand,newDesc:itemDesc,newSize:itemSize,newType:itemType},{});
+	opener.addItem({newMfr:itemMfr,newBrand:itemBrand,newDesc:itemDesc,newSize:itemSize,newType:itemType,newTags:itemTags},{});
     }
 }
 
@@ -38,6 +39,13 @@ function setItemField(id,fieldName,longName,mustBeSet) {
     }
 }
 
+function setItemTags(id) {
+    return function() {
+	var itemTags = Object.keys(this.selectedValues()).join();
+	opener.setItemTags({itemId:id,itemTags:itemTags},{});
+    }
+}
+
 setItem = function(itemDetails) {
 
     // Look to see if this item is already in the table
@@ -51,16 +59,27 @@ setItem = function(itemDetails) {
 		row.cells[2].childNodes[0].value = itemDetails.itemType;
 		row.cells[3].childNodes[0].value = itemDetails.itemDesc;
 		row.cells[4].childNodes[0].value = itemDetails.itemSize;
+		var tagsSelect = row.cells[5].childNodes[0];
+		// Remove all the old options
+		while (tagsSelect.options.length > 0) { tagsSelect.remove(0) }
+		// Create new options
+		forEach (itemDetails.itemTags,function(tagLink) {
+			var tagOption = document.createElement('option');
+			tagOption.text = tagLink.tagName;
+			tagOption.value = tagLink.tagId;
+			tagOption.selected = true;
+			tagsSelect.add(tagOption);
+		    });
 		var showHidden = document.getElementById('itemHideCheckbox').checked;
 		if (itemDetails.itemHidden == 1) {
-		    row.cells[5].childNodes[0].checked = true;
+		    row.cells[6].childNodes[0].checked = true;
 		    if (showHidden) {
 			row.style.display = 'table-row';
 		    } else {
 			row.style.display = 'none';
 		    }
 		} else {
-		    row.cells[5].childNodes[0].checked = false;
+		    row.cells[6].childNodes[0].checked = false;
 		    row.style.display = 'table-row';
 		}
 	    }
@@ -133,6 +152,26 @@ setItem = function(itemDetails) {
     sizeTd.setAttribute('sorttable_customkey', itemDetails.itemSize);
     tr.appendChild(sizeTd);
 
+    // itemTags select
+    var tagsTd = document.createElement('td');
+    var tagsSelect = document.createElement('select');
+    tagsSelect.multiple = true;
+    //tagsSelect.size = 1;
+    forEach (itemDetails.itemTags,function(tagLink) {
+	    var tagOption = document.createElement('option');
+	    tagOption.text = tagLink.tagName;
+	    tagOption.value = tagLink.tagId;
+	    tagOption.selected = true;
+	    tagsSelect.add(tagOption);
+	});
+    tagsSelect.name = 'tagsSelect';
+    tagsSelect.className = 'listof=tags';
+    tagsSelect.disabled = (window.opener.userType == 0);
+    tagsSelect.onblur = setItemTags(itemDetails.itemId);
+    listable.setupSelect(tagsSelect,'tag');
+    tagsTd.appendChild(tagsSelect);
+    tr.appendChild(tagsTd);
+
     // The hidden checkbox
     var hiddenTd = document.createElement('td');
     var hiddenCheckbox = document.createElement('input');
@@ -168,4 +207,5 @@ window.onload = function () {
     document.getElementById('itemTable').setRow = setItem;
     opener.getItems();
     hiddenRows.init();
+    listable.init();
 }

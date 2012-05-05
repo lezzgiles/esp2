@@ -1,10 +1,10 @@
 // Routines for changePassword page
 
 function clickChangePassword() {
-    userName = window.opener.username;
-    oldPassword = document.getElementById('oldPasswordText').value;
-    newPassword = document.getElementById('newPasswordText').value;
-    newPassword2 = document.getElementById('newPassword2Text').value;
+    var userName = window.opener.username;
+    var oldPassword = document.getElementById('oldPasswordText').value;
+    var newPassword = document.getElementById('newPasswordText').value;
+    var newPassword2 = document.getElementById('newPassword2Text').value;
 
     if (oldPassword != window.opener.password) {
 	alert("Password is wrong");

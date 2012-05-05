@@ -183,12 +183,20 @@ function incIncDecField(id,max,inc2,dec)
 
 function checkField(fieldName,msg)
 {
-     field = document.getElementById(fieldName);
+     var field = document.getElementById(fieldName);
      if (field.value == "") {
          alert(msg);
          return false;
      }
      return true;
+}
+
+HTMLSelectElement.prototype.selectedValues = function() {
+    var selected = {};
+    forEach(this.options,function(option) {
+	    if (option.selected) { selected[option.value] = true }
+	});
+    return selected;
 }
 
 function stopRKey(evt) {

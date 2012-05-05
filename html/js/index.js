@@ -176,6 +176,7 @@ function setItemBrand(itemDetails,handlers) { doit('setItemBrand',itemDetails,ha
 function setItemType (itemDetails,handlers) { doit('setItemType', itemDetails,handlers) }
 function setItemDesc (itemDetails,handlers) { doit('setItemDesc', itemDetails,handlers) }
 function setItemSize (itemDetails,handlers) { doit('setItemSize', itemDetails,handlers) }
+function setItemTags (itemDetails,handlers) { doit('setItemTags', itemDetails,handlers) }
 
 ///////////////////////////////////////////////////////////////////////////////
 // Bin handling
@@ -292,7 +293,7 @@ window.onload = function() {
 	esp.windows.bin = window.open("bin.html","bins",specs);
     }
     document.getElementById('itemButton').onclick = function() {
-	esp.windows.bin = window.open("item.html","items",specs);
+	esp.windows.item = window.open("item.html","items",specs);
     }
     document.getElementById('adminButton').onclick = function() {
 	esp.windows.admin = window.open("admin.html","admin",specs);

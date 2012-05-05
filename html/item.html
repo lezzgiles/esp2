@@ -6,6 +6,7 @@ ESP: Items
 <link rel="stylesheet" href="css/esp.css" type="text/css">
 <script src="js/utils.js"></script>
 <script src="js/sorttable.js"></script>
+<script src="js/listable.js"></script>
 <script src="js/hiddenRows.js"></script>
 <script src="js/item.js"></script>
 </HEAD>
@@ -22,6 +23,7 @@ ESP: Items
 <label>Type:<input type="text" id="itemType" size="40"></label><br />
 <label>Description:<input type="text" id="itemDesc" size="40"></label><br />
 <label>Size:<input type="text" id="itemSize" size="40"></label><br />
+<label>Tags:<select id="itemTags" class="listof=tag" multiple="multiple"><option>Select tags</option></select></label><br />
 <input type="button" id="addItemSubmit" value="Add item">
 </fieldset>
 </form>
@@ -34,6 +36,7 @@ ESP: Items
   <th id="itemTypeHeader">Type</th>
   <th id="itemDescHeader">Description</th>
   <th id="itemSizeHeader">Size</th>
+  <th id="itemTagsHeader">Tags</th>
   <th class="sorttable_nosort">Hidden</th>
 </tr>
 </thead>

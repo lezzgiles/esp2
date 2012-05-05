@@ -54,6 +54,11 @@ CREATE TABLE item (
     UNIQUE (itemMfr,itemBrand,itemType,itemDesc,itemSize)
 );
 
+CREATE TABLE itemTag (
+    itemId INTEGER NOT NULL REFERENCES item(itemId),
+    tagId INTEGER NOT NULL REFERENCES tag(tagId),
+    UNIQUE (itemId,tagId)
+);
 !
 
 # userType is..

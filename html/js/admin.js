@@ -1,10 +1,10 @@
 // Routines for admin page
 
 function addUser() {
-    userName = document.getElementById('userNameText').value;
-    userPassword = document.getElementById('userPasswordText').value;
-    userPassword2 = document.getElementById('userPasswordText2').value;
-    userType = document.getElementById('userTypeSelect').value;
+    var userName = document.getElementById('userNameText').value;
+    var userPassword = document.getElementById('userPasswordText').value;
+    var userPassword2 = document.getElementById('userPasswordText2').value;
+    var userType = document.getElementById('userTypeSelect').value;
     if (userName == "") {
 	alert("You must enter a name for the new user");
     } else if (userPassword == "") {
