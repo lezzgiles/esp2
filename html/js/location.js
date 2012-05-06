@@ -18,25 +18,7 @@ function addLocation() {
     }
 }
 
-function setLocationHidden(id) {
-    return function() {
-	opener.setLocationHidden({locationId:id,locationHidden:this.checked?1:0},{});
-	return false;
-    };
-}
-
-function setLocationName(id) {
-    return function() {
-	if (this.value == "") {
-	    alert("You cannot have a blank location name");
-	} else {
-	    opener.setLocationName({locationId:id,locationName:this.value},{});
-	}
-	return false;
-    }
-}
-
-setLocation = function(locationDetails) {
+function setLocation(locationDetails) {
 
     // Look to see if this location is already in the table
     var foundIt = false;
@@ -45,18 +27,7 @@ setLocation = function(locationDetails) {
 		foundIt = true;
 		// This is the correct row, update as necessary
 		row.cells[0].childNodes[0].value = locationDetails.locationName;
-		var showHidden = document.getElementById('locationHideCheckbox').checked;
-		if (locationDetails.locationHidden == 1) {
-		    row.cells[1].childNodes[0].checked = true;
-		    if (showHidden) {
-			row.style.display = 'table-row';
-		    } else {
-			row.style.display = 'none';
-		    }
-		} else {
-		    row.cells[1].childNodes[0].checked = false;
-		    row.style.display = 'table-row';
-		}
+		hiddenRows.showRow(row,row.cells[1],'location',locationDetails);
 	    }
 		    
 	});
@@ -69,44 +40,22 @@ setLocation = function(locationDetails) {
     tr.locationId = locationDetails.locationId
 
     // Location name textbox
-    var nameTd = document.createElement('td');
-    var locationNameText = document.createElement('input');
-    locationNameText.type = 'text';
-    locationNameText.value = locationDetails.locationName;
-    if (window.opener.userType == 0) {
-	locationNameText.disabled = true;
-    }
-    locationNameText.onkeyup = blurOnReturnKey;
-    locationNameText.onchange = setLocationName(locationDetails.locationId);
-    nameTd.appendChild(locationNameText);
-    nameTd.setAttribute('sorttable_customkey', locationDetails.locationName);
-    tr.appendChild(nameTd);
+    tr.appendChild(textTd('location',locationDetails,'Name',{},function(value) {
+		if (value == "") {
+		    alert("You cannot have an empty location name");
+		    return false;
+		} else {
+		    return true;
+		}
+	    }));
 
     // Hide location checkbox
-    var hiddenTd = document.createElement('td');
-    var hiddenCheckbox = document.createElement('input');
-    hiddenCheckbox.type = 'checkbox';
-    hiddenCheckbox.className = 'hiddencheckbox';
-    var showHidden = document.getElementById('locationHideCheckbox').checked;
-    if (locationDetails.locationHidden == 1) {
-	hiddenCheckbox.checked = true;
-	if (showHidden) {
-	    tr.style.display = 'table-row';
-	} else {
-	    tr.style.display = 'none';
-	}
-    }
-    if (window.opener.userType == 0) {
-	hiddenCheckbox.disabled = true;
-    }
-    hiddenCheckbox.onclick = setLocationHidden(locationDetails.locationId);
-    hiddenTd.appendChild(hiddenCheckbox);
-    tr.appendChild(hiddenTd);
+    tr.appendChild(hiddenRows.checkboxTd(tr,'location',locationDetails));
 
     tbody.insertBefore(tr,tbody.firstChild);
 
     // The table is no longer sorted
-    clearSorted(document.getElementById('locationNameHeader'));
+    clearSorted(document.getElementById('locationTable'));
 }
 
 // Set up the page after the html is fully loaded
@@ -120,4 +69,8 @@ window.onload = function () {
     document.getElementById('locationTable').setRow = setLocation;
     opener.getLocations();
     hiddenRows.init();
+}
+
+window.onunload = function () {
+    delete opener.esp.windows.location;
 }

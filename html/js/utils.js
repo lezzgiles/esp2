@@ -199,6 +199,10 @@ HTMLSelectElement.prototype.selectedValues = function() {
     return selected;
 }
 
+String.prototype.capitalize = function() {
+    return this.charAt(0).toUpperCase() + this.slice(1);
+}
+
 function stopRKey(evt) {
    var evt = (evt) ? evt : ((event) ? event : null);
    var node = (evt.target) ? evt.target : ((evt.srcElement) ? evt.srcElement : null);
@@ -417,10 +421,62 @@ function handleResults(results) {
     }
 }
 
+///////////////////////////////////////////////////////////////////////////////
 function blurOnReturnKey(evt) {
    var evt = (evt) ? evt : ((event) ? event : null);
    var node = (evt.target) ? evt.target : ((evt.srcElement) ? evt.srcElement : null);
     if (evt.keyCode == 13) { node.blur(); return false;}
+}
+
+function textTd(type,details,field,attr,validate) {
+    var id = details[type+'Id'];
+    var value = details[type+field];
+    var textInput = document.createElement('input');
+    textInput.type = 'text';
+    textInput.value = value;
+    forEach (Object.keys(attr), function(a) { textInput[a] = attr[a] });
+    if (window.opener.userType == 0) {
+	textInput.disabled = true;
+    }
+    textInput.onkeyup = blurOnReturnKey;
+    textInput.onchange = function() {
+	if (validate && !validate(value)) { return }
+	var newDetails = {};
+	newDetails[type+'Id'] = id
+	newDetails[type+field] = this.value;
+	opener.doit('set'+type.capitalize()+field,newDetails,{});
+    };
+    var td = document.createElement('td');
+    td.appendChild(textInput);
+    td.setAttribute('sorttable_customkey', value);
+    return td;
+}
+
+function selectTd(type,details,field,text,value) {
+    var td = document.createElement('td');
+    var select = document.createElement('select');
+    var id = details[type+'Id'];
+    td.appendChild(select);
+    updateSelectTd(td,text,value);
+    select.className = 'listof='+field.toLowerCase();
+    select.disabled = (window.opener.userType == 0);
+    select.onchange = function() {
+	var newDetails = {};
+	newDetails[type+'Id'] = id;
+	newDetails[field.toLowerCase()+'Id'] = this.options[this.selectedIndex].value;
+	opener.doit('set'+type.capitalize()+field,newDetails,{});
+    };
+    listable.setupSelect(select,field.toLowerCase());
+    return td;
+}
+
+function updateSelectTd(td,text,value) {
+    var select = td.childNodes[0];
+    while (select.options.length > 0) { select.remove(0) }
+    var option = document.createElement('option');
+    option.text = text;
+    option.value = value;
+    select.add(option);
 }
 
 // end script-->

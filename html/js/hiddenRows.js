@@ -30,4 +30,42 @@ hiddenRows = {
 	    }
 	});
     },
+
+    checkboxTd: function(tr,type,details) {
+	var hidden = details[type+'Hidden'];
+	var id = details[type+'Id'];
+	var hiddenTd = document.createElement('td');
+	var hiddenCheckbox = document.createElement('input');
+	hiddenTd.appendChild(hiddenCheckbox);
+
+	hiddenCheckbox.type = 'checkbox';
+	hiddenCheckbox.className = 'hiddencheckbox';
+
+	hiddenRows.showRow(tr,hiddenTd,type,details);
+
+	if (window.opener.userType == 0) {
+	    hiddenCheckbox.disabled = true;
+	}
+	hiddenCheckbox.onclick = function() {
+	    opener.doit('setHidden',{type:type,id:id,hidden:this.checked?1:0},{});
+	    return false;
+	};
+
+	return hiddenTd;
+    },
+
+    showRow: function(tr,td,type,details) {
+	var showHidden = document.getElementById(type+'HideCheckbox').checked;
+	if (details[type+'Hidden'] == 1) {
+	    td.childNodes[0].checked = true;
+	    if (showHidden) {
+		tr.style.display = 'table-row';
+	    } else {
+		tr.style.display = 'none';
+	    }
+	} else {
+	    td.childNodes[0].checked = false;
+	    tr.style.display = 'table-row';
+	}
+    },
 };

@@ -17,24 +17,6 @@ function addUser() {
     }
 }
 
-function setUserHidden(id) {
-    return function() {
-	opener.setUserHidden({userId:id,userHidden:this.checked?1:0},{});
-	return false;
-    };
-}
-
-function setUserName(id) {
-    return function() {
-	if (this.value == "") {
-	    alert("You cannot have a blank username");
-	} else {
-	    opener.setUserName({userId:id,userName:this.value},{});
-	}
-	return false;
-    }
-}
-
 function setUserType(id) {
     return function() {
 	opener.setUserType({userId:id,userType:this.options[this.selectedIndex].value},{});
@@ -49,7 +31,7 @@ function changePasswordButtonClick(userDetails) { return function() {
     }
 }
 
-setUser = function(userDetails) {
+function setUser(userDetails) {
 
     // Look to see if this user is already in the table
     var foundIt = false;
@@ -61,18 +43,7 @@ setUser = function(userDetails) {
 		forEach (row.cells[1].childNodes[0].options,function(o) {
 			o.selected = (o.value == userDetails.userType);
 		    });
-		var showHidden = document.getElementById('userHideCheckbox').checked;
-		if (userDetails.userHidden == 1) {
-		    row.cells[2].childNodes[0].checked = true;
-		    if (showHidden) {
-			row.style.display = 'table-row';
-		    } else {
-			row.style.display = 'none';
-		    }
-		} else {
-		    row.cells[2].childNodes[0].checked = false;
-		    row.style.display = 'table-row';
-		}
+		hiddenRows.showRow(row,row.cells[2],'user',userDetails);
 	    }
 		    
 	});
@@ -85,15 +56,14 @@ setUser = function(userDetails) {
     tr.userId = userDetails.userId;
 
     // The username text field
-    var nameTd = document.createElement('td');
-    var userNameText = document.createElement('input');
-    userNameText.type = 'text';
-    userNameText.value = userDetails.userName;
-    userNameText.onkeyup = blurOnReturnKey;
-    userNameText.onchange = setUserName(userDetails.userId);
-    nameTd.appendChild(userNameText);
-    nameTd.setAttribute('sorttable_customkey', userDetails.userName);
-    tr.appendChild(nameTd);
+    tr.appendChild(textTd('user',userDetails,'Name',function(value) {
+		if (value == "") {
+		    alert("You cannot have a blank username");
+		    return false;
+		} else {
+		    return true;
+		}
+	    }));
 
     // The type select
     var typeTd = document.createElement('td');
@@ -123,23 +93,7 @@ setUser = function(userDetails) {
     tr.appendChild(typeTd);
 
     // The hidden checkbox
-    var hiddenTd = document.createElement('td');
-    var hiddenCheckbox = document.createElement('input');
-    hiddenCheckbox.type = 'checkbox';
-    hiddenCheckbox.className = 'hiddencheckbox';
-    var showHidden = document.getElementById('userHideCheckbox').checked;
-    if (userDetails.userHidden == 1) {
-	hiddenCheckbox.checked = true;
-	if (showHidden) {
-	    tr.style.display = 'table-row';
-	} else {
-	    tr.style.display = 'none';
-	}
-    } 
-    hiddenCheckbox.id = 'userHiddenCheckbox'+userDetails.userId;
-    hiddenCheckbox.onclick = setUserHidden(userDetails.userId);
-    hiddenTd.appendChild(hiddenCheckbox);
-    tr.appendChild(hiddenTd);
+    tr.appendChild(hiddenRows.checkboxTd(tr,'user',userDetails));
 
     // The change password button
     var changePasswordTd = document.createElement('td');
@@ -153,7 +107,7 @@ setUser = function(userDetails) {
     tbody.insertBefore(tr,tbody.firstChild);
 
     // The table is no longer sorted
-    clearSorted(document.getElementById('userNameHeader'));
+    clearSorted(document.getElementById('userTable'));
 }
 
 // Set up the page after the html is fully loaded
@@ -164,3 +118,6 @@ window.onload = function () {
     hiddenRows.init();
 }
 
+window.onunload = function () {
+    delete opener.esp.windows.admin;
+}

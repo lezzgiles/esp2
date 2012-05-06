@@ -115,8 +115,8 @@ eval {
     } elsif ($command eq 'setHidden') {
 	if ($type <= READONLY) { push @returns, ['error','No permission']; return }
 
-	my $id = $query->param($objectType.'Id');
-	my $hidden = $query->param($objectType.'Hidden');
+	my $id = $query->param('id');
+	my $hidden = $query->param('hidden');
 
 	# make sure that the type is one we know about
 	if (! $objectType ~~ [qw(location user bin tag)]) {
@@ -359,11 +359,11 @@ eval {
 	    push @returns, details($dbh,'item',$itemId);
 	}
 
-    } elsif ($command eq 'setItemField') {
+    } elsif ($command =~ /^setItem(.*)/) {
+	my $fieldName = "item$1";
 	if ($type < ADMIN) { push @returns, ['error','Must be an administrator to do this']; return }
 
 	my $itemId = $query->param('itemId');
-	my $fieldName = $query->param('fieldName');
 	my $fieldValue = $query->param($fieldName);
 
 	$dbh->do("UPDATE item SET $fieldName = ? WHERE itemId = ?",undef,$fieldValue,$itemId);

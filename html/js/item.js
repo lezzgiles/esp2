@@ -17,28 +17,6 @@ function addItem() {
     }
 }
 
-function setItemHidden(id) {
-    return function() {
-	opener.setItemHidden({itemId:id,itemHidden:this.checked?1:0},{});
-	return false;
-    };
-}
-
-function setItemField(id,fieldName,longName,mustBeSet) {
-    return function() {
-	if (mustBeSet && this.value == "") {
-	    alert("You cannot have a blank "+longName);
-	} else {
-	    var args;
-	    args.itemId = id;
-	    args.fieldName = fieldName;
-	    args[fieldName] = this.value;
-	    opener.setItemField(args,{});
-	}
-	return false;
-    }
-}
-
 function setItemTags(id) {
     return function() {
 	var itemTags = Object.keys(this.selectedValues()).join();
@@ -46,7 +24,7 @@ function setItemTags(id) {
     }
 }
 
-setItem = function(itemDetails) {
+function setItem(itemDetails) {
 
     // Look to see if this item is already in the table
     var foundIt = false;
@@ -70,18 +48,7 @@ setItem = function(itemDetails) {
 			tagOption.selected = true;
 			tagsSelect.add(tagOption);
 		    });
-		var showHidden = document.getElementById('itemHideCheckbox').checked;
-		if (itemDetails.itemHidden == 1) {
-		    row.cells[6].childNodes[0].checked = true;
-		    if (showHidden) {
-			row.style.display = 'table-row';
-		    } else {
-			row.style.display = 'none';
-		    }
-		} else {
-		    row.cells[6].childNodes[0].checked = false;
-		    row.style.display = 'table-row';
-		}
+		hiddenRows.showRow(row,row.cells[6],'item',itemDetails);
 	    }
 		    
 	});
@@ -94,63 +61,34 @@ setItem = function(itemDetails) {
     tr.itemId = itemDetails.itemId;
 
     // The itemMfr text field
-    var mfrTd = document.createElement('td');
-    var itemMfrText = document.createElement('input');
-    itemMfrText.type = 'text';
-    itemMfrText.size = 10;
-    itemMfrText.value = itemDetails.itemMfr;
-    itemMfrText.onkeyup = blurOnReturnKey;
-    itemMfrText.onchange = setItemField(itemDetails.itemId,'itemMfr','manufacturer',true);
-    mfrTd.appendChild(itemMfrText);
-    mfrTd.setAttribute('sorttable_customkey', itemDetails.itemMfr);
-    tr.appendChild(mfrTd);
+    // TODO set size to 10
+    tr.appendChild(textTd('item',itemDetails,'Mfr',{size:10},function(value) {
+		if (value == "") {
+		    alert("You cannot have a blank manufacturer name");
+		    return false;
+		} else {
+		    return true;
+		}
+	    }));
 
     // The itemBrand text field
-    var brandTd = document.createElement('td');
-    var itemBrandText = document.createElement('input');
-    itemBrandText.type = 'text';
-    itemBrandText.size = 10;
-    itemBrandText.value = itemDetails.itemBrand;
-    itemBrandText.onkeyup = blurOnReturnKey;
-    itemBrandText.onchange = setItemField(itemDetails.itemId,'itemBrand','manufacturer',true);
-    brandTd.appendChild(itemBrandText);
-    brandTd.setAttribute('sorttable_customkey', itemDetails.itemBrand);
-    tr.appendChild(brandTd);
+    tr.appendChild(textTd('item',itemDetails,'Brand',{size:10}));
 
     // The itemType text field
-    var typeTd = document.createElement('td');
-    var itemTypeText = document.createElement('input');
-    itemTypeText.type = 'text';
-    itemTypeText.size = 10;
-    itemTypeText.value = itemDetails.itemType;
-    itemTypeText.onkeyup = blurOnReturnKey;
-    itemTypeText.onchange = setItemField(itemDetails.itemId,'itemType','manufacturer',true);
-    typeTd.appendChild(itemTypeText);
-    typeTd.setAttribute('sorttable_customkey', itemDetails.itemType);
-    tr.appendChild(typeTd);
+    tr.appendChild(textTd('item',itemDetails,'Type',{size:10}));
 
     // The itemDesc text field
-    var descTd = document.createElement('td');
-    var itemDescText = document.createElement('input');
-    itemDescText.type = 'text';
-    itemDescText.value = itemDetails.itemDesc;
-    itemDescText.onkeyup = blurOnReturnKey;
-    itemDescText.onchange = setItemField(itemDetails.itemId,'itemDesc','manufacturer',true);
-    descTd.appendChild(itemDescText);
-    descTd.setAttribute('sorttable_customkey', itemDetails.itemDesc);
-    tr.appendChild(descTd);
+    tr.appendChild(textTd('item',itemDetails,'Desc',{},function(value) {
+		if (value == "") {
+		    alert("You cannot have a blank item description");
+		    return false;
+		} else {
+		    return true;
+		}
+	    }));
 
     // The itemSize text field
-    var sizeTd = document.createElement('td');
-    var itemSizeText = document.createElement('input');
-    itemSizeText.type = 'text';
-    itemSizeText.size = 10;
-    itemSizeText.value = itemDetails.itemSize;
-    itemSizeText.onkeyup = blurOnReturnKey;
-    itemSizeText.onchange = setItemField(itemDetails.itemId,'itemSize','manufacturer',true);
-    sizeTd.appendChild(itemSizeText);
-    sizeTd.setAttribute('sorttable_customkey', itemDetails.itemSize);
-    tr.appendChild(sizeTd);
+    tr.appendChild(textTd('item',itemDetails,'Size',{size:10}));
 
     // itemTags select
     var tagsTd = document.createElement('td');
@@ -173,32 +111,12 @@ setItem = function(itemDetails) {
     tr.appendChild(tagsTd);
 
     // The hidden checkbox
-    var hiddenTd = document.createElement('td');
-    var hiddenCheckbox = document.createElement('input');
-    hiddenCheckbox.type = 'checkbox';
-    hiddenCheckbox.className = 'hiddencheckbox';
-    var showHidden = document.getElementById('itemHideCheckbox').checked;
-    if (itemDetails.itemHidden == 1) {
-	hiddenCheckbox.checked = true;
-	if (showHidden) {
-	    tr.style.display = 'table-row';
-	} else {
-	    tr.style.display = 'none';
-	}
-    } 
-    hiddenCheckbox.id = 'itemHiddenCheckbox'+itemDetails.itemId;
-    hiddenCheckbox.onclick = setItemHidden(itemDetails.itemId);
-    hiddenTd.appendChild(hiddenCheckbox);
-    tr.appendChild(hiddenTd);
+    tr.appendChild(hiddenRows.checkboxTd(tr,'item',itemDetails));
 
     tbody.insertBefore(tr,tbody.firstChild);
 
     // The table is no longer sorted
-    clearSorted(document.getElementById('itemMfrHeader'));
-    clearSorted(document.getElementById('itemBrandHeader'));
-    clearSorted(document.getElementById('itemTypeHeader'));
-    clearSorted(document.getElementById('itemDescHeader'));
-    clearSorted(document.getElementById('itemSizeHeader'));
+    clearSorted(document.getElementById('itemTable'));
 }
 
 // Set up the page after the html is fully loaded
@@ -208,4 +126,8 @@ window.onload = function () {
     opener.getItems();
     hiddenRows.init();
     listable.init();
+}
+
+window.onunload = function () {
+    delete opener.esp.windows.item;
 }

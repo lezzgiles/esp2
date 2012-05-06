@@ -76,11 +76,6 @@ function addTag(tagDetails,handlers) {
     doit('addTag',tagDetails,handlers);
 }
 
-function setTagHidden(tagDetails,handlers) {
-    tagDetails.type = 'tag';
-    doit('setHidden',tagDetails,handlers);
-}
-
 function setTagName(tagDetails,handlers) {
     doit('setTagName',tagDetails,handlers);
 }
@@ -287,22 +282,46 @@ window.onload = function() {
     document.getElementById('loginButton').onclick = clickLogin;
     document.getElementById('logoutButton').onclick = clickLogout;
     document.getElementById('locationsButton').onclick = function() {
-	esp.windows.location = window.open("location.html","locations",specs);
+	if (esp.windows.location) {
+	    esp.windows.location.focus();
+	} else {
+	    esp.windows.location = window.open("location.html","locations",specs);
+	}
     }
     document.getElementById('binsButton').onclick = function() {
-	esp.windows.bin = window.open("bin.html","bins",specs);
+	if (esp.windows.bin) {
+	    esp.windows.bin.focus();
+	} else {
+	    esp.windows.bin = window.open("bin.html","bins",specs);
+	}
     }
     document.getElementById('itemButton').onclick = function() {
-	esp.windows.item = window.open("item.html","items",specs);
+	if (esp.windows.item) {
+	    esp.windows.item.focus();
+	} else {
+	    esp.windows.item = window.open("item.html","items",specs);
+	}
     }
     document.getElementById('adminButton').onclick = function() {
-	esp.windows.admin = window.open("admin.html","admin",specs);
+	if (esp.windows.admin) {
+	    esp.windows.admin.focus();
+	} else {
+	    esp.windows.admin = window.open("admin.html","admin",specs);
+	}
     }
     document.getElementById('tagButton').onclick = function() {
-	esp.windows.tag = window.open("tag.html","tag",specs);
+	if (esp.windows.tag) {
+	    esp.windows.tag.focus();
+	} else {
+	    esp.windows.tag = window.open("tag.html","tag",specs);
+	}
     }
     document.getElementById('changeMyPasswordButton').onclick = function() {
-	esp.windows.changeMyPassword = window.open("changeMyPassword.html","changeMyPassword",specs+',height=240');
+	if (esp.windows.changeMyPassword) {
+	    esp.windows.changeMyPassword.focus();
+	} else {
+	    esp.windows.changeMyPassword = window.open("changeMyPassword.html","changeMyPassword",specs+',height=240');
+	}
     }
     document.getElementById('debugButton').onclick = function() {
 	esp.windows.debug = window.open("debug.html","debug",specs+',height=520,width=970');

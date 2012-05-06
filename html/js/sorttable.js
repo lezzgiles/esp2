@@ -520,11 +520,13 @@ var forEach = function(object, block, context) {
 };
 
 // Added for tables that may be changed
-function clearSorted(header) {
+function clearSorted(table) {
     sortfwdind = document.getElementById('sorttable_sortfwdind');
     if (sortfwdind) { sortfwdind.parentNode.removeChild(sortfwdind); }
     sortrevind = document.getElementById('sorttable_sortrevind');
     if (sortrevind) { sortrevind.parentNode.removeChild(sortrevind); }
-    header.className = header.className.replace('sorttable_sorted_reverse','');
-    header.className = header.className.replace('sorttable_sorted','');
+    forEach (table.rows[0].cells,function(header) {
+	    header.className = header.className.replace('sorttable_sorted_reverse','');
+	    header.className = header.className.replace('sorttable_sorted','');
+	});
 }
