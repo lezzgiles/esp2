@@ -299,7 +299,7 @@ window.onload = function() {
 	if (esp.windows.item) {
 	    esp.windows.item.focus();
 	} else {
-	    esp.windows.item = window.open("item.html","items",specs);
+	    esp.windows.item = window.open("item.html","items",specs+',height=700,width=1500');
 	}
     }
     document.getElementById('adminButton').onclick = function() {

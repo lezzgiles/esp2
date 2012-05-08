@@ -337,7 +337,7 @@ eval {
     # Item
 
     } elsif ($command eq 'addItem') {
-	if ($type < ADMIN) { push @returns, ['error','Must be an administrator to do this']; return }
+	if ($type <= READONLY) { push @returns, ['error','You do not have permission to do this']; return }
 
 	my $itemMfr = $query->param('newMfr');
 	my $itemBrand = $query->param('newBrand');
@@ -361,7 +361,7 @@ eval {
 
     } elsif ($command =~ /^setItem(.*)/) {
 	my $fieldName = "item$1";
-	if ($type < ADMIN) { push @returns, ['error','Must be an administrator to do this']; return }
+	if ($type <= READONLY) { push @returns, ['error','You do not have permission to do this']; return }
 
 	my $itemId = $query->param('itemId');
 	my $fieldValue = $query->param($fieldName);
@@ -372,7 +372,7 @@ eval {
 	push @returns, details($dbh,'item',$itemId);
 
     } elsif ($command eq 'setItemTags') {
-	if ($type < ADMIN) { push @returns, ['error','Must be an administrator to do this']; return }
+	if ($type <= READONLY) { push @returns, ['error','You do not have permission to do this']; return }
 
 	my $itemId = $query->param('itemId');
 	my @itemTags = split(',',$query->param('itemTags'));
@@ -387,11 +387,19 @@ eval {
 	push @returns, details($dbh,'item',$itemId);
 
     } elsif ($command eq 'get' and $objectType eq 'item') {
-	if ($type < ADMIN) { push @returns, ['error','Must be an administrator to do this']; return }
 
-	my $sth = $dbh->prepare("SELECT itemId,itemMfr,itemBrand,itemType,itemDesc,itemSize,itemHidden FROM item ORDER BY itemMfr+\" \"+itemBrand+\" \"+itemType+\" \"+itemDesc+\" \"+itemSize DESC");
+	# Read in the tags table - it should be small
+	my $sth = $dbh->prepare('SELECT tagId,tagName FROM tag');
+	$sth->execute;
+	my %tagName;
+	while (my ($id,$name) = $sth->fetchrow_array) { $tagName{$id} = $name }
+
+	$sth = $dbh->prepare("SELECT itemId,itemMfr,itemBrand,itemType,itemDesc,itemSize,itemHidden,group_concat(tagId) AS tagIds FROM item LEFT JOIN itemTag USING (itemId) GROUP BY itemMfr,itemBrand,itemType,itemDesc,itemSize ORDER BY itemMfr+\" \"+itemBrand+\" \"+itemType+\" \"+itemDesc+\" \"+itemSize DESC");
 	$sth->execute;
 	while (my $details = $sth->fetchrow_hashref) {
+	    # Convert the comma-separated list of tag names into a list of [ name, id ]
+	    $details->{tagIds} ||= '';
+	    $details->{itemTags} = [map { [$tagName{$_},$_] } split(',',$details->{tagIds})];
 	    push @returns, [ 'item', $details ];
 	}
 	if ($sth->err) {

@@ -479,5 +479,58 @@ function updateSelectTd(td,text,value) {
     select.add(option);
 }
 
+if (!Array.prototype.map)
+{
+  Array.prototype.map = function(fun /*, thisp*/)
+  {
+    var len = this.length;
+    if (typeof fun != "function")
+      throw new TypeError();
+
+    var res = new Array(len);
+    var thisp = arguments[1];
+    for (var i = 0; i < len; i++)
+    {
+      if (i in this)
+        res[i] = fun.call(thisp, this[i], i, this);
+    }
+
+    return res;
+  };
+}
+
+  function findPosX(obj)
+  {
+    var curleft = 0;
+    if(obj.offsetParent)
+        while(1) 
+        {
+          curleft += obj.offsetLeft;
+          if(!obj.offsetParent)
+            break;
+          obj = obj.offsetParent;
+        }
+    else if(obj.x)
+        curleft += obj.x;
+    return curleft;
+  }
+
+  function findPosY(obj)
+  {
+    var curtop = 0;
+    if(obj.offsetParent)
+        while(1)
+        {
+          curtop += obj.offsetTop;
+          if(!obj.offsetParent)
+            break;
+          obj = obj.offsetParent;
+        }
+    else if(obj.y)
+        curtop += obj.y;
+    return curtop;
+  }
+
+
 // end script-->
 
