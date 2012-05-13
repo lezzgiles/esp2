@@ -278,49 +278,49 @@ handle.login = function(myUserType) {
 }
 
 window.onload = function() {
-    var specs = "titlebar=no,location=no,menubar=no,status=yes,toolbar=no,width=600,scrollbars=yes";
+    var specs = "titlebar=no,location=no,menubar=no,status=yes,toolbar=no,scrollbars=yes";
     document.getElementById('loginButton').onclick = clickLogin;
     document.getElementById('logoutButton').onclick = clickLogout;
     document.getElementById('locationsButton').onclick = function() {
 	if (esp.windows.location) {
 	    esp.windows.location.focus();
 	} else {
-	    esp.windows.location = window.open("location.html","locations",specs);
+	    esp.windows.location = window.open("location.html","locations",specs+',height=700,width=600');
 	}
     }
     document.getElementById('binsButton').onclick = function() {
 	if (esp.windows.bin) {
 	    esp.windows.bin.focus();
 	} else {
-	    esp.windows.bin = window.open("bin.html","bins",specs);
+	    esp.windows.bin = window.open("bin.html","bins",specs+',height=700,width=600');
 	}
     }
     document.getElementById('itemButton').onclick = function() {
 	if (esp.windows.item) {
 	    esp.windows.item.focus();
 	} else {
-	    esp.windows.item = window.open("item.html","items",specs+',height=700,width=1500');
+	    esp.windows.item = window.open("item.html","items",specs+',height=700,width=1100');
 	}
     }
     document.getElementById('adminButton').onclick = function() {
 	if (esp.windows.admin) {
 	    esp.windows.admin.focus();
 	} else {
-	    esp.windows.admin = window.open("admin.html","admin",specs);
+	    esp.windows.admin = window.open("admin.html","admin",specs+',height=700,width=600');
 	}
     }
     document.getElementById('tagButton').onclick = function() {
 	if (esp.windows.tag) {
 	    esp.windows.tag.focus();
 	} else {
-	    esp.windows.tag = window.open("tag.html","tag",specs);
+	    esp.windows.tag = window.open("tag.html","tag",specs+',height=700,width=600');
 	}
     }
     document.getElementById('changeMyPasswordButton').onclick = function() {
 	if (esp.windows.changeMyPassword) {
 	    esp.windows.changeMyPassword.focus();
 	} else {
-	    esp.windows.changeMyPassword = window.open("changeMyPassword.html","changeMyPassword",specs+',height=240');
+	    esp.windows.changeMyPassword = window.open("changeMyPassword.html","changeMyPassword",specs+',height=240,width=600');
 	}
     }
     document.getElementById('debugButton').onclick = function() {

@@ -21,12 +21,19 @@ listable = {
 		    listable.setupSelect(select,type);
 		}
 	    });
+	forEach(document.getElementsByTagName('input'), function(mselect) {
+		var result = /\blistof=(..*?)\b/.exec(mselect.className);
+		if (result) {
+		    var type = result[1];
+		    listable.setupMselect(mselect,type);
+		}
+	    });
     },
     setupSelect: function(select,type) {
-		    select.onkeyup = blurOnReturnKey;
-		    select.onfocus = function() {
-			listable.expandList(this,type);
-		    };
+	select.onkeyup = blurOnReturnKey;
+	select.onfocus = function() {
+	    listable.expandList(this,type);
+	};
     },
     expandList: function(select,type) {
 	if (type in opener.esp) {
@@ -50,12 +57,78 @@ listable = {
 		});
 
 	} else {
-	    opener.esp[type] = {}
+	    opener.esp[type] = {};
 	    opener.doit('get',{type:type},{
 		    success: function() {
 			listable.expandList(select,type);
 		    },
 		});
-    }
-}
+	}
+    },
+    setupMselect: function(mselect,type) {
+	mselect.onclick = function() {
+	    listable.expandMlist(this,type);
+	}
+    },
+    expandMlist: function(mselect,type) {
+	if (type in opener.esp) {
+	    // Save the current option values so they can be restored after
+	    // recreating the options.
+	    var selectedValues = MSelect.selectedValues(mselect);
+
+	    var popup = document.createElement('div');
+	    popup.style.background = '#d0d0ff';
+	    popup.style.border = 'solid black 1px';
+	    popup.style.padding = '5px';
+	    popup.style.textAlign = 'justify';
+	    forEach (opener.esp[type],function(details) {
+		    if (details[type+'Hidden'] == 0) {
+			var label = document.createElement('label');
+			var checkbox = document.createElement('input');
+			checkbox.type = 'checkbox';
+			checkbox.value = details[type+'Id'];
+			checkbox.checked = (checkbox.value in selectedValues);
+			label.appendChild(checkbox);
+			label.appendChild(document.createTextNode(details[type+'Name']));
+			popup.appendChild(label);
+			popup.appendChild(document.createElement('br'));
+		    }
+		});
+
+	    popup.style.position = 'absolute';
+	    popup.style.top = findPosY(mselect)+mselect.scrollHeight;
+	    popup.style.left = findPosX(mselect);
+	    popup.onmouseout = function(event) {
+		// First check that we are really leaving the popup
+		pX = findPosX(this);
+		pY = findPosY(this);
+		if ( (event.clientX > pX+2) && (event.clientX < pX+this.scrollWidth-2) &&
+		     (event.clientY > pY+2) && (event.clientY < pY+this.scrollHeight-2)
+		     ) {
+		    // Still in the popup, ignore
+		    return;
+		}
+		var newDetails = {};
+		newDetails[mselect.espType+'Id'] = mselect.espId
+		newDetails[mselect.espFieldName] = Array();
+		forEach(popup.getElementsByTagName('label'),function(label) {
+			if (label.childNodes[0].checked) {
+			    newDetails[mselect.espFieldName].push(label.childNodes[0].value);
+			}
+		    });
+		opener.doit('set'+mselect.espFieldName.capitalize(),newDetails,{});
+		document.body.removeChild(popup);
+	    }
+	    document.body.appendChild(popup);
+	} else {
+	    opener.esp[type] = {};
+	    opener.doit('get',{type:type},{
+		    success: function() {
+			listable.expandMlist(mselect,type);
+		    },
+		});
+	}
+
+    },
+
 }

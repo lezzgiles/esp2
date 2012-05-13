@@ -359,18 +359,6 @@ eval {
 	    push @returns, details($dbh,'item',$itemId);
 	}
 
-    } elsif ($command =~ /^setItem(.*)/) {
-	my $fieldName = "item$1";
-	if ($type <= READONLY) { push @returns, ['error','You do not have permission to do this']; return }
-
-	my $itemId = $query->param('itemId');
-	my $fieldValue = $query->param($fieldName);
-
-	$dbh->do("UPDATE item SET $fieldName = ? WHERE itemId = ?",undef,$fieldValue,$itemId);
-	$dbh->commit;
-
-	push @returns, details($dbh,'item',$itemId);
-
     } elsif ($command eq 'setItemTags') {
 	if ($type <= READONLY) { push @returns, ['error','You do not have permission to do this']; return }
 
@@ -382,6 +370,18 @@ eval {
 	    $dbh->do("INSERT INTO itemTag (itemId,tagId) VALUES (?,?)",undef,$itemId,$tagId);
 	}
 
+	$dbh->commit;
+
+	push @returns, details($dbh,'item',$itemId);
+
+    } elsif ($command =~ /^setItem(.*)/) {
+	my $fieldName = "item$1";
+	if ($type <= READONLY) { push @returns, ['error','You do not have permission to do this']; return }
+
+	my $itemId = $query->param('itemId');
+	my $fieldValue = $query->param($fieldName);
+
+	$dbh->do("UPDATE item SET $fieldName = ? WHERE itemId = ?",undef,$fieldValue,$itemId);
 	$dbh->commit;
 
 	push @returns, details($dbh,'item',$itemId);
@@ -480,6 +480,13 @@ sub details {
     if ($objectType eq 'item') {
 	my $details =
 	    $dbh->selectrow_hashref("SELECT itemId,itemMfr,itemBrand,itemType,itemDesc,itemSize,itemHidden FROM item WHERE itemId = ?",undef,$id);
+	my @tags;
+	my $sth = $dbh->prepare("SELECT tagId,tagName FROM itemTag LEFT JOIN tag USING (tagId) WHERE itemId = ?");
+	$sth->execute($id);
+	while (my ($tagId,$tagName) = $sth->fetchrow_array) {
+	    push @tags, [ $tagName, $tagId ];
+	}
+	$details->{itemTags} = \@tags;
 	return [ 'item', $details ];
     }
 

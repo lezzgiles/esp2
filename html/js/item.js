@@ -37,17 +37,7 @@ function setItem(itemDetails) {
 		row.cells[2].childNodes[0].value = itemDetails.itemType;
 		row.cells[3].childNodes[0].value = itemDetails.itemDesc;
 		row.cells[4].childNodes[0].value = itemDetails.itemSize;
-		var tagsSelect = row.cells[5].childNodes[0];
-		// Remove all the old options
-		while (tagsSelect.options.length > 0) { tagsSelect.remove(0) }
-		// Create new options
-		forEach (itemDetails.itemTags,function(tagLink) {
-			var tagOption = document.createElement('option');
-			tagOption.text = tagLink.tagName;
-			tagOption.value = tagLink.tagId;
-			tagOption.selected = true;
-			tagsSelect.add(tagOption);
-		    });
+		MSelect.update(row.cells[5].childNodes[0],itemDetails.itemTags);
 		hiddenRows.showRow(row,row.cells[6],'item',itemDetails);
 	    }
 		    
@@ -91,24 +81,8 @@ function setItem(itemDetails) {
     tr.appendChild(textTd('item',itemDetails,'Size',{size:10}));
 
     // itemTags select
-
     var tagsTd = document.createElement('td');
-    //    var tagsSelect = document.createElement('select');
-    //    tagsSelect.multiple = true;
-    //    //tagsSelect.size = 1;
-    //    forEach (itemDetails.itemTags,function(tagLink) {
-    //	    var tagOption = document.createElement('option');
-    //	    tagOption.text = tagLink.tagName;
-    //	    tagOption.value = tagLink.tagId;
-    //	    tagOption.selected = true;
-    //	    tagsSelect.add(tagOption);
-    //	});
-    //    tagsSelect.name = 'tagsSelect';
-    //    tagsSelect.className = 'listof=tags';
-    //    tagsSelect.disabled = (window.opener.userType == 0);
-    //    tagsSelect.onblur = setItemTags(itemDetails.itemId);
-    //    listable.setupSelect(tagsSelect,'tag');
-    tagsTd.appendChild(mselect.mselect('item',itemDetails,'itemTags',{}));
+    tagsTd.appendChild(MSelect.mselect('item',itemDetails,'tag',{}));
     tr.appendChild(tagsTd);
 
     // The hidden checkbox
