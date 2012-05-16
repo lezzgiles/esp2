@@ -108,15 +108,29 @@ listable = {
 		    // Still in the popup, ignore
 		    return;
 		}
-		var newDetails = {};
-		newDetails[mselect.espType+'Id'] = mselect.espId
-		newDetails[mselect.espFieldName] = Array();
-		forEach(popup.getElementsByTagName('label'),function(label) {
-			if (label.childNodes[0].checked) {
-			    newDetails[mselect.espFieldName].push(label.childNodes[0].value);
-			}
-		    });
-		opener.doit('set'+mselect.espFieldName.capitalize(),newDetails,{});
+		if ('espFieldName' in mselect) {
+		    // This is a thing in a table, so update it
+		    var newDetails = {};
+		    newDetails[mselect.espType+'Id'] = mselect.espId
+		    newDetails[mselect.espFieldName] = Array();
+		    forEach(popup.getElementsByTagName('label'),function(label) {
+			    if (label.childNodes[0].checked) {
+				newDetails[mselect.espFieldName].push(label.childNodes[0].value);
+			    }
+			});
+		    opener.doit('set'+mselect.espFieldName.capitalize(),newDetails,{});
+		} else {
+		    // This is a list of things for a new item
+		    names = Array();
+		    mselect.espValues = Array();
+		    forEach(popup.getElementsByTagName('label'),function(label) {
+			    if (label.childNodes[0].checked) {
+				mselect.espValues.push([label.childNodes[1].nodeValue,label.childNodes[0].value]);
+				names.push(label.childNodes[1].nodeValue);
+			    }
+			});
+		    mselect.value = names.join();
+		}
 		document.body.removeChild(popup);
 	    }
 	    document.body.appendChild(popup);

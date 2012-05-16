@@ -6,7 +6,8 @@ function addItem() {
     var itemType = document.getElementById('itemType').value;
     var itemDesc = document.getElementById('itemDesc').value;
     var itemSize = document.getElementById('itemSize').value;
-    var itemTags = Object.keys(document.getElementById('itemTags').selectedValues()).join();
+    var itemTags = document.getElementById('itemTags').espValues.map(function(pair) { selected[pair[1]] });
+    if (!itemTags) { itemTags = Array() }
     if (itemMfr == "") {
 	alert("You must enter a manufacturer name for the new item");
     } else if (itemDesc == "") {

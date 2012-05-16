@@ -235,6 +235,7 @@ function clickLogout() {
     username = '';
     password = '';
     document.getElementById('locationsButton').disabled = 'disabled';
+    document.getElementById('purchaseButton').disabled = 'disabled';
     document.getElementById('itemButton').disabled = 'disabled';
     document.getElementById('binsButton').disabled = 'disabled';
     document.getElementById('adminButton').disabled = 'disabled';
@@ -258,6 +259,7 @@ handle.login = function(myUserType) {
     userType = myUserType;
     // Login worked - enable the buttons
     document.getElementById('locationsButton').disabled = '';
+    document.getElementById('purchaseButton').disabled = '';
     document.getElementById('itemButton').disabled = '';
     document.getElementById('tagButton').disabled = '';
     document.getElementById('binsButton').disabled = '';
@@ -286,6 +288,13 @@ window.onload = function() {
 	    esp.windows.location.focus();
 	} else {
 	    esp.windows.location = window.open("location.html","locations",specs+',height=700,width=600');
+	}
+    }
+    document.getElementById('purchaseButton').onclick = function() {
+	if (esp.windows.purchase) {
+	    esp.windows.purchase.focus();
+	} else {
+	    esp.windows.purchase = window.open("purchase.html","purchases",specs+',height=700,width=600');
 	}
     }
     document.getElementById('binsButton').onclick = function() {

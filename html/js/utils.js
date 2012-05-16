@@ -455,17 +455,19 @@ function textTd(type,details,field,attr,validate) {
 function selectTd(type,details,field,text,value) {
     var td = document.createElement('td');
     var select = document.createElement('select');
-    var id = details[type+'Id'];
-    td.appendChild(select);
-    updateSelectTd(td,text,value);
     select.className = 'listof='+field.toLowerCase();
     select.disabled = (window.opener.userType == 0);
-    select.onchange = function() {
-	var newDetails = {};
-	newDetails[type+'Id'] = id;
-	newDetails[field.toLowerCase()+'Id'] = this.options[this.selectedIndex].value;
-	opener.doit('set'+type.capitalize()+field,newDetails,{});
-    };
+    td.appendChild(select);
+    updateSelectTd(td,text,value);
+    if (type) {
+	var id = details[type+'Id'];
+	select.onchange = function() {
+	    var newDetails = {};
+	    newDetails[type+'Id'] = id;
+	    newDetails[field.toLowerCase()+'Id'] = this.options[this.selectedIndex].value;
+	    opener.doit('set'+type.capitalize()+field,newDetails,{});
+	};
+    }
     listable.setupSelect(select,field.toLowerCase());
     return td;
 }

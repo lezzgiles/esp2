@@ -1,0 +1,59 @@
+<HTML>
+<HEAD>
+<TITLE>
+ESP: Purchases
+</TITLE>
+<link rel="stylesheet" href="css/esp.css" type="text/css">
+<script src="js/utils.js"></script>
+<script src="js/sorttable.js"></script>
+<script src="js/listable.js"></script>
+<script src="js/hiddenRows.js"></script>
+<script src="js/mselect.js"></script>
+<script src="js/purchase.js"></script>
+<script src="js/debug.js"></script>
+</HEAD>
+<BODY>
+<div class="mainbody">
+<h1>
+ESP: Purchase
+</h1>
+<form id="addPurchase">
+<fieldset class="add">
+<legend class="add">New Purchase</legend>
+<label>Seller: <input type="text" id="seller" size="40"></label><br />
+<label>Reconcile entry: <input type="checkbox" id="reconcile"></label><br />
+<table border="1" id="addPurchaseTable">
+<thead>
+<tr><th>Item</th><th>Qty</th><th>Cost/item</th><th>Total</th></tr>
+</thead>
+<tbody>
+</tbody>
+<tfoot>
+<tr><td colspan="3" style="text-align:right">Subtotal:</td><td><input type="text" class="money" value="0.00" id="subtotal" size="5" readonly="readonly"></td></tr>
+<tr><td colspan="3" style="text-align:right">Shipping:</td><td><input type="text" class="money" value="0.00" id="shipping" size="5"></td></tr>
+<tr><td colspan="3" style="text-align:right">Tax:</td><td><input type="text" class="money" value="0.00" id="tax" size="5"></td></tr>
+<tr><td colspan="3" style="text-align:right">Adjustments (e.g. rebates):</td><td><input type="text" class="money" value="0.00" id="adjustments" size="5"></td></tr>
+<tr><td colspan="3" style="text-align:right">Total:</td><td><input type="text" class="money" id="total" value="0.00" size="5" readonly="readonly"></td></tr>
+</tfoot>
+</table>
+<input type="button" value='add another item' id="addAnother">
+<p />
+<input type="button" value='Add new purchase' id="addPurchaseSubmit">
+</fieldset>
+</form>
+<table border=1 name="purchaseTable" id="purchaseTable" class="listthings sortable">
+<thead>
+<tr>
+  <th id="purchaseDateHeader">Date</th>
+  <th id="purchaseSellerHeader">Seller</th>
+  <th id="purchaseRecHeader">Rec</th>
+  <th id="purchaseCostHeader">Cost</th>
+</tr>
+</thead>
+<tbody>
+</tbody>
+</table>
+</div>
+
+</BODY>
+</HTML>
