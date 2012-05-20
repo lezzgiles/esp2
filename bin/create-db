@@ -1,5 +1,10 @@
 #!/bin/sh
 
+# All fieldnames start with tablename
+# All keys are INTEGER PRIMARY KEY
+# All unique combinations identified
+# All foreign keys identified
+# booleans are ENUM(0,1)
 databaseName=$1
 directory=$2
 
@@ -50,15 +55,91 @@ CREATE TABLE item (
     itemType VARCHAR NOT NULL,
     itemDesc VARCHAR NOT NULL,
     itemSize VARCHAR NOT NULL,
+    itemMfrid VARCHAR,
     itemHidden ENUM(0,1) DEFAULT 0,
     UNIQUE (itemMfr,itemBrand,itemType,itemDesc,itemSize)
 );
 
+CREATE TABLE binItems (
+    binId INTEGER NOT NULL REFERENCES bin(binId),
+    itemId INTEGER NOT NULL REFERENCES item(itemId),
+    quantity INTEGER NOT NULL
+);
+    
 CREATE TABLE itemTag (
     itemId INTEGER NOT NULL REFERENCES item(itemId),
     tagId INTEGER NOT NULL REFERENCES tag(tagId),
     UNIQUE (itemId,tagId)
 );
+
+CREATE TABLE kit (
+    kitId INTEGER PRIMARY KEY,
+    kitName VARCHAR NOT NULL,
+    kitBoxed ENUM(0,1) DEFAULT 0,
+    kitQuantity INTEGER NOT NULL DEFAULT 0,
+    UNIQUE (kitName,kitBoxed)
+);
+
+CREATE TABLE kitItem (
+    kitId INTEGER NOT NULL REFERENCES kit(kitId),
+    itemId INTEGER NOT NULL REFERENCES item(itemId),
+    quantity INTEGER NOT NULL
+);
+
+-- TRANSACTIONS
+-- Same table is used for all five transaction types.  Different types use different fields.
+
+-- This table only exists for documentation and may not be used
+CREATE TABLE tranType (
+    typeId INTEGER PRIMARY KEY,
+    typeName VARCHAR NOT NULL
+);
+INSERT INTO tranType (typeId,typeName) VALUES(0,'Purchase');
+INSERT INTO tranType (typeId,typeName) VALUES(1,'Sale');
+INSERT INTO tranType (typeId,typeName) VALUES(2,'Reconcile add');
+INSERT INTO tranType (typeId,typeName) VALUES(3,'Reconcile del');
+INSERT INTO tranType (typeId,typeName) VALUES(4,'Move');
+
+CREATE TABLE tran (
+    tranId INTEGER PRIMARY KEY,
+    tranType INTEGER NOT NULL REFERENCES tranType(typeId),
+    tranParty VARCHAR,
+    tranDate TEXT NOT NULL,
+    tranTax INTEGER,
+    tranShipping INTEGER,
+    tranAdjustments INTEGER,
+    tranInvoice TEXT,
+    tranTracking TEXT,
+    tranPicklist ENUM(0,1) DEFAULT 0,
+    binId INTEGER REFERENCES bin(binId)
+);
+
+
+CREATE TABLE tranItem (
+    tranId INTEGER NOT NULL REFERENCES tran(tranId),
+    itemId INTEGER NOT NULL REFERENCES item(itemId),
+    binId INTEGER NOT NULL REFERENCES bin(binId),
+    quantity INTEGER NOT NULL,
+    price INTEGER    -- NULL for transactions ADD DEL MOVE
+);
+
+-- EBAY LISTINGS
+CREATE TABLE ebay (
+    ebayId INTEGER PRIMARY KEY,
+    ebayTitle TEXT UNIQUE,
+    quantity INTEGER NOT NULL
+);
+
+CREATE TABLE ebayItem (
+    ebayId INTEGER NOT NULL REFERENCES ebay(ebayId),
+    itemId INTEGER NOT NULL REFERENCES item(itemId)
+);
+
+CREATE TABLE ebayKit (
+    ebayId INTEGER NOT NULL REFERENCES ebay(ebayId),
+    kitId INTEGER NOT NULL REFERENCES kit(kitId)
+);
+
 !
 
 # userType is..

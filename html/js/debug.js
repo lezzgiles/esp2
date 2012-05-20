@@ -9,13 +9,4 @@ debug = {
 		});
 	}
     },
-
-    showObject: function(object) {
-	var retval = "";
-	for (property in object) {
-	    retval += property+": "+object[property]+"; ";
-	}
-	return retval;
-    }
-
 }

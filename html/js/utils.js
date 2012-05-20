@@ -366,7 +366,7 @@ function doit (command,parameters) {
     parameters['apiVersion'] = apiVersion;
     parameters['password'] = password;
 
-    debug.write('Sending: '+command,debug.showObject(parameters));
+    debug.write('Sending: '+JSON.stringify(parameters));
 
     var myHandler;
 
