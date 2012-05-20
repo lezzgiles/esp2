@@ -1,6 +1,26 @@
 function calcTotals() {
-    self.moneyFormat();
+    // Fix the formatting of this cell, if this was called in response to
+    // an onblur event
+    if (this.value && this.className == 'money') moneyFormat(this);
+
     // Calculate totals
+    // Go through the whole table
+    var subtotal = 0;
+    var total = 0;
+    var table = document.getElementById('addPurchaseTable');
+    forEach (table.tBodies[0].rows, function (row) {
+	    var qty = row.cells[1].childNodes[0].value;
+	    var costPerItem = dollars2cents(row.cells[2].childNodes[0]);
+	    var rowTotal = qty*costPerItem;
+	    row.cells[3].childNodes[0].value = cents2dollars(rowTotal);
+	    subtotal += rowTotal;
+	});
+    document.getElementById('subtotal').value = cents2dollars(subtotal);
+    total += subtotal;
+    total += dollars2cents(document.getElementById('shipping'));
+    total += dollars2cents(document.getElementById('tax'));
+    total += dollars2cents(document.getElementById('adjustments'));
+    document.getElementById('total').value = cents2dollars(total);
 }
 
 function addPurchaseItemRow() {
@@ -42,6 +62,7 @@ function addPurchaseItemRow() {
     totalText.value = '0.00';
     totalText.readonly = 'readonly';
     totalText.className = 'money';
+    totalText.readonly = true;
     totalTd.appendChild(totalText);
     tr.appendChild(totalTd);
 
@@ -50,7 +71,13 @@ function addPurchaseItemRow() {
     var deleteButton = document.createElement('img');
     deleteButton.src = 'delete.gif';
     deleteButton.onclick = function() {
-	table.deleteChild(tr);
+	for (var i=0; i<table.rows.length; i++) {
+	    if (table.rows[i] == tr) {
+		table.deleteRow(i);
+		break;
+	    }
+	}
+	calcTotals();
     };
     deleteTd.appendChild(deleteButton);
     tr.appendChild(deleteTd);
@@ -66,6 +93,7 @@ window.onload = function() {
     document.getElementById('adjustments').onblur = calcTotals;
     document.getElementById('addAnother').onclick = addPurchaseItemRow;
     document.getElementById('addPurchaseSubmit').onclick = addPurchaseSubmit;
+    addPurchaseItemRow();
 }
 
 window.onunload = function() {

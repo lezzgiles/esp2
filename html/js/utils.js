@@ -84,11 +84,10 @@ function dollars2cents(textObj)
    var decAmount = "";
    var dolAmount = "";
    var decFlag = false;
-   var aChar = "";
    
    // ignore all but digits and decimal points.
    for(i=0; i < newValue.length; i++) {
-      aChar = newValue.substring(i,i+1);
+      var aChar = newValue.substring(i,i+1);
       if(aChar >= "0" && aChar <= "9") {
          if(decFlag) {
            decAmount = "" + decAmount + aChar;
@@ -108,6 +107,36 @@ function dollars2cents(textObj)
     if (dolAmount == "") { dolAmount = 0; }
     if (decAmount == "") { decAmount = 0; }
     return parseInt(dolAmount)*100+parseInt(decAmount);
+}
+function dollars2cents(textObj)
+{
+   var newValue = textObj.value;
+   var decAmount = 0;
+   var dolAmount = 0;
+   var decFlag = false;
+   var negFlag = 1;
+   
+   // ignore all but digits and decimal points.
+   for(i=0; i < newValue.length; i++) {
+      var aChar = newValue.substring(i,i+1);
+      if(aChar >= "0" && aChar <= "9") {
+	  var aInt = parseInt(aChar);
+	  if(decFlag) {
+	      decAmount = decAmount*10 + aInt;
+	  } else {
+	      dolAmount = dolAmount*10 + aInt;
+	  }
+      } else if (aChar == ".") {
+	  if (decFlag) {
+	      dolAmount = 0;
+	      break;
+	  }
+	  decFlag=true;
+      } else if (aChar == '-') {
+	  negFlag = -1;
+      }
+   }
+   return negFlag * (dolAmount*100+decAmount);
 }
 
 function cents2dollars(value)

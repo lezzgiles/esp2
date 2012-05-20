@@ -144,7 +144,7 @@ function getItems() {
 
 // This handler is called after a doit("getItems"), once for each item
 handle.item = function (itemDetails) {
-    esp.items[itemDetails.itemId] = itemDetails;
+    esp.item[itemDetails.itemId] = itemDetails;
     tellItem(itemDetails);
 }
 

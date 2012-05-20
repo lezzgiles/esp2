@@ -397,6 +397,12 @@ eval {
 	$sth = $dbh->prepare("SELECT itemId,itemMfr,itemBrand,itemType,itemDesc,itemSize,itemHidden,group_concat(tagId) AS tagIds FROM item LEFT JOIN itemTag USING (itemId) GROUP BY itemMfr,itemBrand,itemType,itemDesc,itemSize ORDER BY itemMfr+\" \"+itemBrand+\" \"+itemType+\" \"+itemDesc+\" \"+itemSize DESC");
 	$sth->execute;
 	while (my $details = $sth->fetchrow_hashref) {
+	    # Generate the item name
+	    my @itemName;
+	    foreach my $f (qw(itemMgr itemBrand itemType itemDesc itemSize)) {
+		defined($details->{$f}) and push @itemName, $details->{$f};
+	    }
+	    $details->{itemName} = join(' ',@itemName);
 	    # Convert the comma-separated list of tag names into a list of [ name, id ]
 	    $details->{tagIds} ||= '';
 	    $details->{itemTags} = [map { [$tagName{$_},$_] } split(',',$details->{tagIds})];
