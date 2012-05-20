@@ -81,36 +81,6 @@ function moneyFormat(textObj) {
 function dollars2cents(textObj)
 {
    var newValue = textObj.value;
-   var decAmount = "";
-   var dolAmount = "";
-   var decFlag = false;
-   
-   // ignore all but digits and decimal points.
-   for(i=0; i < newValue.length; i++) {
-      var aChar = newValue.substring(i,i+1);
-      if(aChar >= "0" && aChar <= "9") {
-         if(decFlag) {
-           decAmount = "" + decAmount + aChar;
-         }
-         else {
-            dolAmount = "" + dolAmount + aChar;
-         }
-      }
-      if(aChar == ".") {
-         if(decFlag) {
-            dolAmount = "";
-            break;
-         }
-         decFlag=true;
-      }
-   }
-    if (dolAmount == "") { dolAmount = 0; }
-    if (decAmount == "") { decAmount = 0; }
-    return parseInt(dolAmount)*100+parseInt(decAmount);
-}
-function dollars2cents(textObj)
-{
-   var newValue = textObj.value;
    var decAmount = 0;
    var dolAmount = 0;
    var decFlag = false;
@@ -370,9 +340,9 @@ HTTP.get = function(url,callback,options) {
     }
 	
     var target = url;
-    if (options.parameters) target += "?" + HTTP.encodeFormData(options.parameters);
-    request.open("GET", target);
-    request.send(null);
+    //if (options.parameters) target += "?" + HTTP.encodeFormData(options.parameters);
+    request.open("POST", target);
+    request.send(JSON.stringify(options.parameters));
 }
 
 ////////////////////////////////////////////////////
@@ -422,7 +392,7 @@ function handleResults(results) {
 	message = "Request failed for an unknown reason";
 	retval = false;
     } else {
-	results = eval(results);
+	results = JSON.parse(results);
 	forEach (results, function(result) {
 	    var command = result.shift();
 	    if (command == 'error') {

@@ -8,13 +8,18 @@ require 5.10.0;
 use CGI;
 use DBI;
 use FindBin qw($Bin);
-use JSON qw(encode_json);
+use JSON qw(encode_json decode_json);
 
 use constant ADMIN => 2;
 use constant NORMAL => 1;
 use constant READONLY => 0;
 
 my $query = CGI->new;
+my $postdata = decode_json($query->param('POSTDATA'));
+#print "Content-Type: text/json;charset=utf-8\n";
+#print "\n";
+#print encode_json([[ 'error', 'response is '.$postdata->{command}]]);
+#return;
 
 my @returns;
 my $dbh;
@@ -29,17 +34,17 @@ if ($trace) {
 }
 
 eval {
-    my $command = $query->param('command');
+    my $command = $postdata->{command};
 
     my $objectType = "";
-    if ($command eq 'get' || $command eq 'setHidden') { $objectType = $query->param('type'); }
+    if ($command eq 'get' || $command eq 'setHidden') { $objectType = $postdata->{type}; }
 
     #######################################
     # Make sure the user is approved to use the database
-    my $database = $query->param('database');
-    my $username = $query->param('username');
-    my $password = $query->param('password');
-    my $queryApiVersion = $query->param('apiVersion');
+    my $database = $postdata->{database};
+    my $username = $postdata->{username};
+    my $password = $postdata->{password};
+    my $queryApiVersion = $postdata->{apiVersion};
 
     #######################################
     # Get the api version number from the javascript file
@@ -115,8 +120,8 @@ eval {
     } elsif ($command eq 'setHidden') {
 	if ($type <= READONLY) { push @returns, ['error','No permission']; return }
 
-	my $id = $query->param('id');
-	my $hidden = $query->param('hidden');
+	my $id = $postdata->{id};
+	my $hidden = $postdata->{hidden};
 
 	# make sure that the type is one we know about
 	if (! $objectType ~~ [qw(location user bin tag)]) {
@@ -133,7 +138,7 @@ eval {
 
     } elsif ($command eq 'addLocation') {
 	if ($type <= READONLY) { push @returns, ['error','No permission']; return }
-	my $locationName = $query->param('locationName');
+	my $locationName = $postdata->{locationName};
 	my ($count) = $dbh->selectrow_array("SELECT COUNT(*) FROM location WHERE locationName = ?",undef,$locationName);
 	if ($count > 0) {
 	    push @returns, [ 'error', "Location $locationName already exists\n" ];
@@ -147,8 +152,8 @@ eval {
     } elsif ($command eq 'setLocationName') {
 	if ($type <= READONLY) { push @returns, ['error','No permission']; return }
 
-	my $locationId = $query->param('locationId');
-	my $newName = $query->param('locationName');
+	my $locationId = $postdata->{locationId};
+	my $newName = $postdata->{locationName};
 
 	my ($count) = $dbh->selectrow_array("SELECT COUNT(*) FROM location WHERE locationName = ?",undef,$newName);
 	if ($count > 0) {
@@ -175,7 +180,7 @@ eval {
 
     } elsif ($command eq 'addTag') {
 	if ($type <= READONLY) { push @returns, ['error','No permission']; return }
-	my $tagName = $query->param('tagName');
+	my $tagName = $postdata->{tagName};
 	my ($count) = $dbh->selectrow_array("SELECT COUNT(*) FROM tag WHERE tagName = ?",undef,$tagName);
 	if ($count > 0) {
 	    push @returns, [ 'error', "Tag $tagName already exists\n" ];
@@ -189,8 +194,8 @@ eval {
     } elsif ($command eq 'setTagName') {
 	if ($type <= READONLY) { push @returns, ['error','No permission']; return }
 
-	my $tagId = $query->param('tagId');
-	my $newName = $query->param('tagName');
+	my $tagId = $postdata->{tagId};
+	my $newName = $postdata->{tagName};
 
 	my ($count) = $dbh->selectrow_array("SELECT COUNT(*) FROM tag WHERE tagName = ?",undef,$newName);
 	if ($count > 0) {
@@ -217,9 +222,9 @@ eval {
 
     } elsif ($command eq 'addBin') {
 	if ($type <= READONLY) { push @returns, ['error','No permission']; return }
-	my $binName = $query->param('binName');
-	my $binSlots = $query->param('binSlots');
-	my $locationId = $query->param('locationId');
+	my $binName = $postdata->{binName};
+	my $binSlots = $postdata->{binSlots};
+	my $locationId = $postdata->{locationId};
 	my ($count) = $dbh->selectrow_array("SELECT COUNT(*) FROM bin WHERE binName = ?",undef,$binName);
 	if ($count > 0) {
 	    push @returns, [ 'error', "Bin $binName already exists\n" ];
@@ -233,8 +238,8 @@ eval {
     } elsif ($command eq 'setBinName') {
 	if ($type <= READONLY) { push @returns, ['error','No permission']; return }
 
-	my $binId = $query->param('binId');
-	my $binName = $query->param('binName');
+	my $binId = $postdata->{binId};
+	my $binName = $postdata->{binName};
 
 	my ($count) = $dbh->selectrow_array("SELECT COUNT(*) FROM bin WHERE binName = ?",undef,$binName);
 	if ($count > 0) {
@@ -248,8 +253,8 @@ eval {
     } elsif ($command eq 'setBinLocation') {
 	if ($type <= READONLY) { push @returns, ['error','No permission']; return }
 
-	my $binId = $query->param('binId');
-	my $locationId = $query->param('locationId');
+	my $binId = $postdata->{binId};
+	my $locationId = $postdata->{locationId};
 
 	$dbh->do("UPDATE bin SET locationId = ? WHERE binId = ?",undef,$locationId,$binId);
 	$dbh->commit;
@@ -259,8 +264,8 @@ eval {
     } elsif ($command eq 'changeBinSlots') {
 	if ($type <= READONLY) { push @returns, ['error','No permission']; return }
 
-	my $binId = $query->param('binId');
-	my $newSlots = $query->param('newSlots');
+	my $binId = $postdata->{binId};
+	my $newSlots = $postdata->{newSlots};
 
 	$dbh->do("UPDATE bin SET binSlots = ? WHERE binId = ?",undef,$newSlots,$binId);
 	$dbh->commit;
@@ -282,9 +287,9 @@ eval {
     } elsif ($command eq 'addUser') {
 	if ($type < ADMIN) { push @returns, ['error','Must be an administrator to do this']; return }
 
-	my $userName = $query->param('newName');
-	my $userPassword = $query->param('newPassword');
-	my $userType = $query->param('newType');
+	my $userName = $postdata->{newName};
+	my $userPassword = $postdata->{newPassword};
+	my $userType = $postdata->{newType};
 
 	my ($count) = $dbh->selectrow_array("SELECT COUNT(*) FROM user WHERE userName = ?",undef,$userName);
 	if ($count > 0) {
@@ -299,8 +304,8 @@ eval {
     } elsif ($command eq 'setUserType') {
 	if ($type < ADMIN) { push @returns, ['error','Must be an administrator to do this']; return }
 
-	my $userId = $query->param('userId');
-	my $userType = $query->param('userType');
+	my $userId = $postdata->{userId};
+	my $userType = $postdata->{userType};
 	$dbh->do("UPDATE user SET userType = ? WHERE userId = ?",undef,$userType,$userId);
 	$dbh->commit;
 
@@ -309,8 +314,8 @@ eval {
     } elsif ($command eq 'setUserName') {
 	if ($type < ADMIN) { push @returns, ['error','Must be an administrator to do this']; return }
 
-	my $userId = $query->param('userId');
-	my $newName = $query->param('userName');
+	my $userId = $postdata->{userId};
+	my $newName = $postdata->{userName};
 
 	my ($count) = $dbh->selectrow_array("SELECT COUNT(*) FROM user WHERE userName = ?",undef,$newName);
 	if ($count > 0) {
@@ -339,12 +344,12 @@ eval {
     } elsif ($command eq 'addItem') {
 	if ($type <= READONLY) { push @returns, ['error','You do not have permission to do this']; return }
 
-	my $itemMfr = $query->param('newMfr');
-	my $itemBrand = $query->param('newBrand');
-	my $itemType = $query->param('newType');
-	my $itemDesc = $query->param('newDesc');
-	my $itemSize = $query->param('newSize');
-	my @itemTags = split(',',$query->param('newTags'));
+	my $itemMfr = $postdata->{newMfr};
+	my $itemBrand = $postdata->{newBrand};
+	my $itemType = $postdata->{newType};
+	my $itemDesc = $postdata->{newDesc};
+	my $itemSize = $postdata->{newSize};
+	my @itemTags = split(',',$postdata->{newTags});
 
 	my ($count) = $dbh->selectrow_array("SELECT COUNT(*) FROM item WHERE itemMfr = ? AND itemBrand = ? AND itemType = ? AND itemDesc = ? AND itemSize = ?",undef,$itemMfr,$itemBrand,$itemType,$itemDesc,$itemSize);
 	if ($count > 0) {
@@ -362,8 +367,8 @@ eval {
     } elsif ($command eq 'setItemTags') {
 	if ($type <= READONLY) { push @returns, ['error','You do not have permission to do this']; return }
 
-	my $itemId = $query->param('itemId');
-	my @itemTags = split(',',$query->param('itemTags'));
+	my $itemId = $postdata->{itemId};
+	my @itemTags = split(',',$postdata->{itemTags});
 
 	$dbh->do("DELETE FROM itemTag WHERE itemId = ?",undef,$itemId);
 	foreach my $tagId (@itemTags) {
@@ -378,8 +383,8 @@ eval {
 	my $fieldName = "item$1";
 	if ($type <= READONLY) { push @returns, ['error','You do not have permission to do this']; return }
 
-	my $itemId = $query->param('itemId');
-	my $fieldValue = $query->param($fieldName);
+	my $itemId = $postdata->{itemId};
+	my $fieldValue = $postdata->{fieldName};
 
 	$dbh->do("UPDATE item SET $fieldName = ? WHERE itemId = ?",undef,$fieldValue,$itemId);
 	$dbh->commit;
@@ -416,8 +421,8 @@ eval {
     # Password stuff
 
     } elsif ($command eq 'changeMyPassword') {
-	my $oldPassword = $query->param('oldPassword');
-	my $newPassword = $query->param('newPassword');
+	my $oldPassword = $postdata->{oldPassword};
+	my $newPassword = $postdata->{newPassword};
 
 	if ($oldPassword ne $password) {
 	    push @returns, [ 'error', "Password is wrong" ];
@@ -430,8 +435,8 @@ eval {
     } elsif ($command eq 'setUserPassword') {
 	if ($type < ADMIN) { push @returns, [ 'error', "Must be an administrator to do this" ]; return;	}
 
-	my $changeUserId = $query->param('userId');
-	my $newPassword = $query->param('newPassword');
+	my $changeUserId = $postdata->{userId};
+	my $newPassword = $postdata->{newPassword};
 	$dbh->do("UPDATE user SET userPassword = ? WHERE userId = ?",undef,$newPassword,$changeUserId);
 	$dbh->commit();
 	# no return = success
