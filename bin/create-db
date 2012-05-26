@@ -38,9 +38,10 @@ CREATE TABLE bin (
     binName VARCHAR NOT NULL UNIQUE,
     binSlots INTEGER NOT NULL,
     binHidden NOT NULL DEFAULT 0,
-    locationId INTEGER NOT NULL REFERENCES location(locationId)
+    locationId INTEGER NOT NULL REFERENCES location(locationId),
+    binIncoming ENUM(0,1) DEFAULT 0
 );
-INSERT INTO bin (binName,binSlots,locationId) VALUES ('arrived',0,1);
+INSERT INTO bin (binName,binSlots,locationId,binIncoming) VALUES ('arrived',0,1,1);
 
 CREATE TABLE tag (
     tagId INTEGER PRIMARY KEY,
@@ -91,18 +92,19 @@ CREATE TABLE kitItem (
 
 -- This table only exists for documentation and may not be used
 CREATE TABLE tranType (
-    typeId INTEGER PRIMARY KEY,
-    typeName VARCHAR NOT NULL
+    trantypeId INTEGER PRIMARY KEY,
+    trantypeName VARCHAR NOT NULL
 );
-INSERT INTO tranType (typeId,typeName) VALUES(0,'Purchase');
-INSERT INTO tranType (typeId,typeName) VALUES(1,'Sale');
-INSERT INTO tranType (typeId,typeName) VALUES(2,'Reconcile add');
-INSERT INTO tranType (typeId,typeName) VALUES(3,'Reconcile del');
-INSERT INTO tranType (typeId,typeName) VALUES(4,'Move');
+INSERT INTO tranType (trantypeId,trantypeName) VALUES(0,'Purchase');
+INSERT INTO tranType (trantypeId,trantypeName) VALUES(1,'Sale');
+INSERT INTO tranType (trantypeId,trantypeName) VALUES(2,'Reconcile add');
+INSERT INTO tranType (trantypeId,trantypeName) VALUES(3,'Reconcile del');
+INSERT INTO tranType (trantypeId,trantypeName) VALUES(4,'Move');
 
 CREATE TABLE tran (
     tranId INTEGER PRIMARY KEY,
-    tranType INTEGER NOT NULL REFERENCES tranType(typeId),
+    userId INTEGER NOT NULL REFERENCES user(userId),
+    trantypeId INTEGER NOT NULL REFERENCES trantype(trantypeId),
     tranParty VARCHAR,
     tranDate TEXT NOT NULL,
     tranTax INTEGER,

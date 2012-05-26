@@ -282,6 +282,18 @@ eval {
 	}
 
     #######################################
+    # binIncoming
+    } elsif ($command eq 'getBinIncoming') {
+	my $details = $dbh->selectrow_hashref('SELECT binName,binId from bin WHERE binIncoming = 1');
+	push @returns, [ 'binIncoming', $details ];
+
+    } elsif ($command eq 'setBinIncoming') {
+	my $binId = $postdata->{binId};
+	$dbh->do('UPDATE bin SET binIncoming = 0 WHERE binIncoming = 1',{});
+	$dbh->do('UPDATE bin SET binIncoming = 1 WHERE binId = ?',{},$binId);
+	$dbh->commit;
+    
+    #######################################
     # User
 
     } elsif ($command eq 'addUser') {
@@ -349,7 +361,7 @@ eval {
 	my $itemType = $postdata->{newType};
 	my $itemDesc = $postdata->{newDesc};
 	my $itemSize = $postdata->{newSize};
-	my @itemTags = split(',',$postdata->{newTags});
+	my @itemTags = @{$postdata->{newTags}};
 
 	my ($count) = $dbh->selectrow_array("SELECT COUNT(*) FROM item WHERE itemMfr = ? AND itemBrand = ? AND itemType = ? AND itemDesc = ? AND itemSize = ?",undef,$itemMfr,$itemBrand,$itemType,$itemDesc,$itemSize);
 	if ($count > 0) {
@@ -368,7 +380,7 @@ eval {
 	if ($type <= READONLY) { push @returns, ['error','You do not have permission to do this']; return }
 
 	my $itemId = $postdata->{itemId};
-	my @itemTags = split(',',$postdata->{itemTags});
+	my @itemTags = @{$postdata->{itemTags}};
 
 	$dbh->do("DELETE FROM itemTag WHERE itemId = ?",undef,$itemId);
 	foreach my $tagId (@itemTags) {
@@ -404,7 +416,7 @@ eval {
 	while (my $details = $sth->fetchrow_hashref) {
 	    # Generate the item name
 	    my @itemName;
-	    foreach my $f (qw(itemMgr itemBrand itemType itemDesc itemSize)) {
+	    foreach my $f (qw(itemMfr itemBrand itemType itemDesc itemSize)) {
 		defined($details->{$f}) and push @itemName, $details->{$f};
 	    }
 	    $details->{itemName} = join(' ',@itemName);
@@ -416,6 +428,32 @@ eval {
 	if ($sth->err) {
 	    push @returns, [ 'error', $sth->err ];
 	}
+
+    #######################################
+    # Purchase
+
+    } elsif ($command eq 'addPurchase') {
+	if ($type <= READONLY) { push @returns, ['error','You do not have permission to do this']; return }
+
+	my $seller = $postdata->{seller};
+	my $shipping = $postdata->{shipping};
+	my $tax = $postdata->{tax};
+	my $adjustments = $postdata->{adjustments};
+	my @items = @{$postdata->{items}};
+
+	my $userId = $dbh->selectrow_array('SELECT userId FROM user WHERE userName = ?',undef,$username);
+
+	$dbh->do("INSERT INTO tran (userId,trantypeId,tranParty,tranDate,tranTax,tranShipping,tranAdjustments) VALUES (?,?,?,datetime('now'),?,?,?)",undef,$userId,0,$seller,$tax,$shipping,$adjustments);
+	my $tranId = $dbh->last_insert_id(undef,undef,undef,undef);
+
+	my ($binId) = $dbh->selectrow_arrayref('SELECT binId FROM bin WHERE binIncoming = 1');
+
+	foreach my $item (@items) {
+	    $dbh->do("INSERT INTO tranItem (tranId,itemId,binId,quantity,price) VALUES (?,?,?,?,?)",undef,$tranId,$item->{itemId},$binId->[0],$item->{qty},$item->{price});
+	    $dbh->do("INSERT INTO binItems (binId,itemId,quantity) VALUES (?,?,?)",undef,$binId->[0],$item->{itemId},$item->{qty});
+	}
+	$dbh->commit;
+	push @returns, details($dbh,'tran',$tranId);
 
     #######################################
     # Password stuff
@@ -463,6 +501,16 @@ print "\n";
 print encode_json(\@returns);
 
 ###############################################################################
+sub itemDetails2name {
+    my $details = shift;
+    my @nameParts;
+    foreach my $part (qw(itemMfr,itemBrand,itemType,itemDesc,itemSize)) {
+	push @nameParts,$details->{$part} if ($details->{$part});
+    }
+    return join(' ',@nameParts);
+}
+
+###############################################################################
 sub details {
     my $dbh = shift;
     my $objectType = shift;
@@ -491,6 +539,7 @@ sub details {
     if ($objectType eq 'item') {
 	my $details =
 	    $dbh->selectrow_hashref("SELECT itemId,itemMfr,itemBrand,itemType,itemDesc,itemSize,itemHidden FROM item WHERE itemId = ?",undef,$id);
+	$details->{itemName} = itemDetails2name($details);
 	my @tags;
 	my $sth = $dbh->prepare("SELECT tagId,tagName FROM itemTag LEFT JOIN tag USING (tagId) WHERE itemId = ?");
 	$sth->execute($id);
@@ -500,5 +549,17 @@ sub details {
 	$details->{itemTags} = \@tags;
 	return [ 'item', $details ];
     }
-
+    if ($objectType eq 'tran') {
+	my $details =
+	    $dbh->selectrow_hashref("SELECT tranId,userId,trantypeName AS tranType,tranParty,tranDate,tranTax,tranShipping,tranAdjustments,tranInvoice,tranTracking,tranPicklist,binId FROM tran LEFT JOIN trantype USING(trantypeId) WHERE tranId = ?",undef,$id);
+	my @items;
+	my $sth = $dbh->prepare("SELECT itemMfr,itemBrand,itemType,itemDesc,itemSize,binName,locationName,quantity,price FROM tranItem LEFT JOIN bin USING(binId) LEFT JOIN location USING (locationId) LEFT JOIN item USING (itemId) WHERE tranId = ?");
+	$sth->execute($id);
+	while (my $itemDetails = $sth->fetchrow_hashref) {
+	    $itemDetails->{itemName} = itemDetails2name($itemDetails);
+	    push @items,$itemDetails;
+	}
+	$details->{itemDetails} = \@items;
+	return [ 'tran', $details ];
+    }	
 }

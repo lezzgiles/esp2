@@ -36,7 +36,6 @@ listable = {
 	};
     },
     expandList: function(select,type) {
-	debug.write("in expandList");
 	if (type in opener.esp) {
 	    // Save the current option values so they can be restored after
 	    // recreating the options.

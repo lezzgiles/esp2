@@ -6,8 +6,12 @@ function addItem() {
     var itemType = document.getElementById('itemType').value;
     var itemDesc = document.getElementById('itemDesc').value;
     var itemSize = document.getElementById('itemSize').value;
-    var itemTags = document.getElementById('itemTags').espValues.map(function(pair) { selected[pair[1]] });
-    if (!itemTags) { itemTags = Array() }
+    var itemTags = document.getElementById('itemTags').espValues;
+    if (itemTags) {
+	itemTags = itemTags.map(function(pair) { selected[pair[1]] });
+    } else {
+	itemTags = Array();
+    }
     if (itemMfr == "") {
 	alert("You must enter a manufacturer name for the new item");
     } else if (itemDesc == "") {

@@ -84,17 +84,17 @@ function setTagName(tagDetails,handlers) {
 // User handling
 
 function getUsers() {
-    if ('users' in esp) {
-	forEach (esp.users, tellUser);
+    if ('user' in esp) {
+	forEach (esp.user, tellUser);
     } else {
-	esp.users = {};
+	esp.user = {};
 	doit('get',{type:'user'});
     }
 }
 
 // This handler is called after a doit("getUsers"), once for each user
 handle.user = function (userDetails) {
-    esp.users[userDetails.userId] = userDetails;
+    esp.user[userDetails.userId] = userDetails;
     tellUser(userDetails);
 }
 
@@ -134,10 +134,10 @@ function changeMyPassword(userDetails,handlers) {
 // Item handling
 
 function getItems() {
-    if ('items' in esp) {
-	forEach (esp.items, tellItem);
+    if ('item' in esp) {
+	forEach (esp.item, tellItem);
     } else {
-	esp.items = {};
+	esp.item = {};
 	doit('get',{type:'item'});
     }
 }
@@ -177,17 +177,17 @@ function setItemTags (itemDetails,handlers) { doit('setItemTags', itemDetails,ha
 // Bin handling
 
 function getBins() {
-    if ('bins' in esp) {
-	forEach (esp.bins, tellBin);
+    if ('bin' in esp) {
+	forEach (esp.bin, tellBin);
     } else {
-	esp.bins = {};
+	esp.bin = {};
 	doit('get',{type:'bin'});
     }
 }
 
 // This handler is called after a doit("getBins"), once for each bin
 handle.bin = function (binDetails) {
-    esp.bins[binDetails.binId] = binDetails;
+    esp.bin[binDetails.binId] = binDetails;
     tellBin(binDetails);
 }
 
@@ -214,6 +214,45 @@ function setBinName(binDetails,handlers) {
 }
 function setBinLocation(binDetails,handlers) {
     doit('setBinLocation',binDetails,handlers);
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// Transactions
+
+handle.tran = function(tranDetails) {
+    tellTran(tranDetails);
+}
+
+function tellTran(tranDetails) {
+    forEach (esp.windows, function(window) {
+	    if (!window.document) { return; }
+	    forEach(window.document.getElementsByName('tranTable'), function(table) {
+		    table.setRow(tranDetails);
+		});
+	});
+}
+
+
+function getPurchases() {
+    if ('purchase' in esp) {
+	forEach (esp.purchase, tellPurchase);
+    } else {
+	esp.purchase = {};
+	doit('get',{type:'purchase'});
+    }
+}
+
+function tellPurchase(purchaseDetails) {
+    forEach (esp.windows, function(window) {
+	    if (!window.document) { return; }
+	    forEach(window.document.getElementsByName('purchaseTable'), function(table) {
+		    table.setRow(purchaseDetails);
+		});
+	});
+}
+
+function addPurchase(purchaseDetails,handlers) {
+    doit('addPurchase',purchaseDetails,handlers);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -333,6 +372,6 @@ window.onload = function() {
 	}
     }
     document.getElementById('debugButton').onclick = function() {
-	esp.windows.debug = window.open("debug.html","debug",specs+',height=520,width=970');
+	esp.windows.debug = window.open("debug.html","debug",specs+',height=520,width=650');
     }
 }

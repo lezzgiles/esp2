@@ -110,12 +110,28 @@ function setUser(userDetails) {
     clearSorted(document.getElementById('userTable'));
 }
 
+handle = {
+    binIncoming: function(binIncomingDetails) {
+	var option = document.createElement('option');
+	option.text = binIncomingDetails.binName;
+	option.value = binIncomingDetails.binId;
+	var select = document.getElementById('binIncoming');
+	select.add(option);
+	select.expanded = false;
+    },
+}
+
 // Set up the page after the html is fully loaded
 window.onload = function () {
     document.getElementById('addUserSubmit').onclick = addUser;
     document.getElementById('userTable').setRow = setUser;
+    document.getElementById('binIncoming').onchange = function(event) {
+	doit('setBinIncoming',{binId:event.target.options[event.target.selectedIndex].value},{});
+    };
     opener.getUsers();
     hiddenRows.init();
+    listable.init();
+    doit('getBinIncoming',{},{});
 }
 
 window.onunload = function () {

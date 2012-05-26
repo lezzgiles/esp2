@@ -21,7 +21,6 @@ ESP: Purchase
 <fieldset class="add">
 <legend class="add">New Purchase</legend>
 <label>Seller: <input type="text" id="seller" size="40"></label><br />
-<label>Reconcile entry: <input type="checkbox" id="reconcile"></label><br />
 <table border="1" id="addPurchaseTable">
 <thead>
 <tr><th>Item</th><th>Qty</th><th>Cost/item</th><th>Total</th></tr>
@@ -41,12 +40,11 @@ ESP: Purchase
 <input type="button" value='Add new purchase' id="addPurchaseSubmit">
 </fieldset>
 </form>
-<table border=1 name="purchaseTable" id="purchaseTable" class="listthings sortable">
+<table border=1 name="tranTable" id="purchaseTable" class="listthings sortable">
 <thead>
 <tr>
   <th id="purchaseDateHeader">Date</th>
   <th id="purchaseSellerHeader">Seller</th>
-  <th id="purchaseRecHeader">Rec</th>
   <th id="purchaseCostHeader">Cost</th>
 </tr>
 </thead>
