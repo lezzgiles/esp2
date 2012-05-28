@@ -237,7 +237,7 @@ function getPurchases() {
     if ('purchase' in esp) {
 	forEach (esp.purchase, tellPurchase);
     } else {
-	esp.purchase = {};
+	//esp.purchase = {};
 	doit('get',{type:'purchase'});
     }
 }

@@ -191,7 +191,24 @@ function setPurchase(tranDetails) {
     td.appendChild(document.createTextNode(cents2dollars(total)));
     tr.appendChild(td);
 
+    // Set up the timer for the purchase popup
+    var popupTimer;
+    tr.onmouseover = function() {
+	popupTimer=setTimeout(function() { popupPurchase(tranDetails.tranId) },1000);
+    };
+    tr.onmousemove = function() {
+	clearTimeout(popupTimer);
+	popupTimer=setTimeout(function() { popupPurchase(tranDetails.tranId) },1000);
+    };
+    tr.onmouseout = function() {
+	clearTimeout(popupTimer);
+    };
+
     tbody.insertBefore(tr,tbody.firstChild);
+}
+
+function popupPurchase(id) {
+    debug.write("Details for "+id);
 }
 
 window.onload = function() {
@@ -202,6 +219,7 @@ window.onload = function() {
     document.getElementById('addPurchaseSubmit').onclick = addPurchaseSubmit;
     document.getElementById('purchaseTable').setRow = setPurchase;
     addPurchaseItemRow();
+    opener.getPurchases();
 }
 
 window.onunload = function() {

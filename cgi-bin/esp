@@ -414,12 +414,7 @@ eval {
 	$sth = $dbh->prepare("SELECT itemId,itemMfr,itemBrand,itemType,itemDesc,itemSize,itemHidden,group_concat(tagId) AS tagIds FROM item LEFT JOIN itemTag USING (itemId) GROUP BY itemMfr,itemBrand,itemType,itemDesc,itemSize ORDER BY itemMfr+\" \"+itemBrand+\" \"+itemType+\" \"+itemDesc+\" \"+itemSize DESC");
 	$sth->execute;
 	while (my $details = $sth->fetchrow_hashref) {
-	    # Generate the item name
-	    my @itemName;
-	    foreach my $f (qw(itemMfr itemBrand itemType itemDesc itemSize)) {
-		defined($details->{$f}) and push @itemName, $details->{$f};
-	    }
-	    $details->{itemName} = join(' ',@itemName);
+	    $details->{itemName} = itemDetails2name($details);
 	    # Convert the comma-separated list of tag names into a list of [ name, id ]
 	    $details->{tagIds} ||= '';
 	    $details->{itemTags} = [map { [$tagName{$_},$_] } split(',',$details->{tagIds})];
@@ -455,6 +450,23 @@ eval {
 	$dbh->commit;
 	push @returns, details($dbh,'tran',$tranId);
 
+    } elsif ($command eq 'get' and $objectType eq 'purchase') {
+	my $sth = $dbh->prepare("SELECT tranId,userId,trantypeName AS tranType,tranParty,tranDate,tranTax,tranShipping,tranAdjustments,tranInvoice,tranTracking,tranPicklist,binId FROM tran LEFT JOIN trantype USING(trantypeId)");
+	$sth->execute;
+	while (my $details = $sth->fetchrow_hashref) {
+	    my @items;
+	    my $sth2 = $dbh->prepare("SELECT itemMfr,itemBrand,itemType,itemDesc,itemSize,binName,locationName,quantity,price FROM tranItem LEFT JOIN bin USING(binId) LEFT JOIN location USING (locationId) LEFT JOIN item USING (itemId) WHERE tranId = ?");
+	    $sth2->execute($details->{tranId});
+	    while (my $itemDetails = $sth2->fetchrow_hashref) {
+		$itemDetails->{itemName} = itemDetails2name($itemDetails);
+		push @items,$itemDetails;
+	    }
+	    $details->{itemDetails} = \@items;
+	    push @returns, [ 'tran', $details ];
+	}
+	if ($sth->err) {
+	    push @returns, [ 'error', $sth->err ];
+	}
     #######################################
     # Password stuff
 
@@ -504,7 +516,7 @@ print encode_json(\@returns);
 sub itemDetails2name {
     my $details = shift;
     my @nameParts;
-    foreach my $part (qw(itemMfr,itemBrand,itemType,itemDesc,itemSize)) {
+    foreach my $part (qw(itemMfr itemBrand itemType itemDesc itemSize)) {
 	push @nameParts,$details->{$part} if ($details->{$part});
     }
     return join(' ',@nameParts);
