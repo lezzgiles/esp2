@@ -154,6 +154,7 @@ function setPurchase(tranDetails) {
     var tbody = this.tBodies[0];
     var tr = document.createElement('tr');
     tr.tranId = tranDetails.tranId;
+    tr.espDetails = tranDetails;
     
     // Simple table - no need to make anything modifiable
 
@@ -194,11 +195,11 @@ function setPurchase(tranDetails) {
     // Set up the timer for the purchase popup
     var popupTimer;
     tr.onmouseover = function() {
-	popupTimer=setTimeout(function() { popupPurchase(tranDetails.tranId) },1000);
+	popupTimer=setTimeout(function() { popupPurchase(tr) },1000);
     };
     tr.onmousemove = function() {
 	clearTimeout(popupTimer);
-	popupTimer=setTimeout(function() { popupPurchase(tranDetails.tranId) },1000);
+	popupTimer=setTimeout(function() { popupPurchase(tr) },1000);
     };
     tr.onmouseout = function() {
 	clearTimeout(popupTimer);
@@ -207,8 +208,91 @@ function setPurchase(tranDetails) {
     tbody.insertBefore(tr,tbody.firstChild);
 }
 
-function popupPurchase(id) {
-    debug.write("Details for "+id);
+function popupPurchase(row) {
+    var details = row.espDetails;
+    var popup = document.createElement('div');
+    popup.style.background = '#d0d0ff';
+    popup.style.border = 'solid black 1px';
+    popup.style.padding = '5px';
+
+    var input = document.createElement('input');
+    input.type = 'text';
+    input.size = 40;
+    input.value = details.tranParty;
+    var label = document.createElement('label').appendChild(input);
+    popup.appendChild(label);
+
+    var table = document.createElement('table');
+    var tr = document.createElement('tr');
+    var th;
+    forEach( [ 'Item', 'Qty','Cost/item','Total' ], function(t) {
+	    var th = document.createElement('th');
+	    th.appendChild(document.createTextNode(t));
+	    tr.appendChild(th);
+	});
+
+    table.appendChild(tr);
+
+    var subtotal = 0;
+
+    forEach (details.itemDetails, function(itemDetails) {
+	    var tr = document.createElement('tr');
+	    var td;
+	    var input;
+
+	    td = document.createElement('td');
+	    input = document.createElement('input');
+	    input.type = 'text';
+	    input.value = itemDetails.itemName;
+	    td.appendChild(input);
+	    tr.appendChild(td);
+
+	    td = document.createElement('td');
+	    input = document.createElement('input');
+	    input.type = 'text';
+	    input.size = 5;
+	    input.style.textAlign = 'right';
+	    input.value = itemDetails.quantity;
+	    td.appendChild(input);
+	    tr.appendChild(td);
+
+	    td = document.createElement('td');
+	    input = document.createElement('input');
+	    input.type = 'text';
+	    input.size = 5;
+	    input.style.textAlign = 'right';
+	    input.value = cents2dollars(itemDetails.price);
+	    td.appendChild(input);
+	    tr.appendChild(td);
+
+	    td = document.createElement('td');
+	    input = document.createElement('input');
+	    input.type = 'text';
+	    input.size = 5;
+	    input.style.textAlign = 'right';
+	    input.value = cents2dollars(itemDetails.price*itemDetails.quantity);
+	    subtotal += itemDetails.price*itemDetails.quantity;
+	    td.appendChild(input);
+	    tr.appendChild(td);
+
+	    table.appendChild(tr);
+	});
+
+    tr = document.createElement('tr');
+    var td = document.createElement('td');
+    input = document.createElement('input');
+    input.type = 'text';
+    input.value = cents2dollars(subtotal);
+    td.appendChild(input);
+    tr.appendChild(td);
+    popup.appendChild(table);
+    popup.style.position = 'absolute';
+    popup.style.left = findPosX(row);
+    popup.style.top = findPosY(row);
+    popup.onmouseout = function(event) {
+	document.body.removeChild(popup);
+    };
+    document.body.appendChild(popup);
 }
 
 window.onload = function() {
