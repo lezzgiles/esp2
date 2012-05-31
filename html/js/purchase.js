@@ -214,17 +214,21 @@ function popupPurchase(row) {
     popup.style.background = '#d0d0ff';
     popup.style.border = 'solid black 1px';
     popup.style.padding = '5px';
-
+    popup.appendChild(document.createTextNode('Seller:'));
     var input = document.createElement('input');
     input.type = 'text';
     input.size = 40;
+    input.readOnly = true;
     input.value = details.tranParty;
     var label = document.createElement('label').appendChild(input);
     popup.appendChild(label);
 
     var table = document.createElement('table');
-    var tr = document.createElement('tr');
+    table.border = 1;
+    var tr = table.insertRow(-1);
     var th;
+    var td;
+
     forEach( [ 'Item', 'Qty','Cost/item','Total' ], function(t) {
 	    var th = document.createElement('th');
 	    th.appendChild(document.createTextNode(t));
@@ -233,16 +237,17 @@ function popupPurchase(row) {
 
     table.appendChild(tr);
 
-    var subtotal = 0;
+    var total = 0;
 
     forEach (details.itemDetails, function(itemDetails) {
-	    var tr = document.createElement('tr');
+	    var tr = table.insertRow(-1);
 	    var td;
 	    var input;
 
 	    td = document.createElement('td');
 	    input = document.createElement('input');
 	    input.type = 'text';
+	    input.readOnly = true;
 	    input.value = itemDetails.itemName;
 	    td.appendChild(input);
 	    tr.appendChild(td);
@@ -251,6 +256,7 @@ function popupPurchase(row) {
 	    input = document.createElement('input');
 	    input.type = 'text';
 	    input.size = 5;
+	    input.readOnly = true;
 	    input.style.textAlign = 'right';
 	    input.value = itemDetails.quantity;
 	    td.appendChild(input);
@@ -260,6 +266,7 @@ function popupPurchase(row) {
 	    input = document.createElement('input');
 	    input.type = 'text';
 	    input.size = 5;
+	    input.readOnly = true;
 	    input.style.textAlign = 'right';
 	    input.value = cents2dollars(itemDetails.price);
 	    td.appendChild(input);
@@ -269,22 +276,99 @@ function popupPurchase(row) {
 	    input = document.createElement('input');
 	    input.type = 'text';
 	    input.size = 5;
+	    input.readOnly = true;
 	    input.style.textAlign = 'right';
 	    input.value = cents2dollars(itemDetails.price*itemDetails.quantity);
-	    subtotal += itemDetails.price*itemDetails.quantity;
+	    total += itemDetails.price*itemDetails.quantity;
 	    td.appendChild(input);
 	    tr.appendChild(td);
 
 	    table.appendChild(tr);
 	});
 
-    tr = document.createElement('tr');
-    var td = document.createElement('td');
+    tr = table.insertRow(-1);
+    td = document.createElement('td');
+    td.colSpan = 3;
+    td.style.textAlign = 'right';
+    td.appendChild(document.createTextNode('Subtotal:'));
+    tr.appendChild(td);
+    td = document.createElement('td');
     input = document.createElement('input');
     input.type = 'text';
-    input.value = cents2dollars(subtotal);
+    input.size = 5;
+    input.readOnly = true;
+    input.style.textAlign = 'right';
+    input.value = cents2dollars(total);
     td.appendChild(input);
     tr.appendChild(td);
+
+    tr = table.insertRow(-1);
+    td = document.createElement('td');
+    td.colSpan = 3;
+    td.style.textAlign = 'right';
+    td.appendChild(document.createTextNode('Shipping:'));
+    tr.appendChild(td);
+    td = document.createElement('td');
+    input = document.createElement('input');
+    input.type = 'text';
+    input.size = 5;
+    input.readOnly = true;
+    input.style.textAlign = 'right';
+    input.value = cents2dollars(details.tranShipping);
+    total += details.tranShipping;
+    td.appendChild(input);
+    tr.appendChild(td);
+
+    tr = table.insertRow(-1);
+    td = document.createElement('td');
+    td.colSpan = 3;
+    td.style.textAlign = 'right';
+    td.appendChild(document.createTextNode('Tax:'));
+    tr.appendChild(td);
+    td = document.createElement('td');
+    input = document.createElement('input');
+    input.type = 'text';
+    input.size = 5;
+    input.readOnly = true;
+    input.style.textAlign = 'right';
+    input.value = cents2dollars(details.tranTax);
+    total += details.tranTax;
+    td.appendChild(input);
+    tr.appendChild(td);
+    
+    tr = table.insertRow(-1);
+    td = document.createElement('td');
+    td.colSpan = 3;
+    td.style.textAlign = 'right';
+    td.appendChild(document.createTextNode('Adjustments (e.g. rebates):'));
+    tr.appendChild(td);
+    td = document.createElement('td');
+    input = document.createElement('input');
+    input.type = 'text';
+    input.size = 5;
+    input.readOnly = true;
+    input.style.textAlign = 'right';
+    input.value = cents2dollars(details.tranAdjustments);
+    total += details.tranAdjustments;
+    td.appendChild(input);
+    tr.appendChild(td);
+
+    tr = table.insertRow(-1);
+    td = document.createElement('td');
+    td.colSpan = 3;
+    td.style.textAlign = 'right';
+    td.appendChild(document.createTextNode('Total:'));
+    tr.appendChild(td);
+    td = document.createElement('td');
+    input = document.createElement('input');
+    input.type = 'text';
+    input.size = 5;
+    input.readOnly = true;
+    input.style.textAlign = 'right';
+    input.value = cents2dollars(total);
+    td.appendChild(input);
+    tr.appendChild(td);
+
     popup.appendChild(table);
     popup.style.position = 'absolute';
     popup.style.left = findPosX(row);
