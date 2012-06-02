@@ -56,7 +56,7 @@ function setUser(userDetails) {
     tr.userId = userDetails.userId;
 
     // The username text field
-    tr.appendChild(textTd('user',userDetails,'Name',function(value) {
+    tr.appendChild(field.textTd('user',userDetails,'Name',function(value) {
 		if (value == "") {
 		    alert("You cannot have a blank username");
 		    return false;

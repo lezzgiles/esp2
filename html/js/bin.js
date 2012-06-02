@@ -37,16 +37,11 @@ function setBin(binDetails) {
 	    if (row.binId == binDetails.binId) {
 		foundIt = true;
 		// This is the correct row, update as necessary
-		// name
 		row.cells[0].childNodes[0].value = binDetails.binName;
-		// slots
 		row.cells[1].childNodes[0].value = binDetails.binSlots;
-		// location
-		updateSelectTd(row.cells[2],binDetails.locationName,binDetails.locationId);
-		// hidden
+		field.updateSelectTd(row.cells[2],binDetails.locationName,binDetails.locationId);
 		hiddenRows.showRow(row,row.cells[3],'bin',binDetails);
 	    }
-		    
 	});
 
     if (foundIt) { return; }
@@ -56,7 +51,7 @@ function setBin(binDetails) {
     tr.binId = binDetails.binId
 
     // Bin name textbox
-    tr.appendChild(textTd('bin',binDetails,'Name',{},function(value) {
+    tr.appendChild(field.textTd('bin',binDetails,'Name',{},function(value) {
 		if (value == "") {
 		    alert("You cannot have a blank bin name");
 		    return false;
@@ -66,7 +61,7 @@ function setBin(binDetails) {
 	    }));
 
     // Bin slots textbox
-    tr.appendChild(textTd('bin',binDetails,'Slots',{size:5},function(value) {
+    tr.appendChild(field.textTd('bin',binDetails,'Slots',{size:5},function(value) {
 		if (value == "") {
 		    // TODO - check that slots is a number
 		    alert("You cannot have a blank bin name");
@@ -77,7 +72,7 @@ function setBin(binDetails) {
 	    }));
 
     // Location select
-    tr.appendChild(selectTd('bin',binDetails,'Location',binDetails.locationName,binDetails.locationId));
+    tr.appendChild(field.selectTd('bin',binDetails,'Location',binDetails.locationName,binDetails.locationId));
 
     // Hide bin checkbox
     tr.appendChild(hiddenRows.checkboxTd(tr,'bin',binDetails));

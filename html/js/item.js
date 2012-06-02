@@ -57,7 +57,7 @@ function setItem(itemDetails) {
 
     // The itemMfr text field
     // TODO set size to 10
-    tr.appendChild(textTd('item',itemDetails,'Mfr',{size:10},function(value) {
+    tr.appendChild(field.textTd('item',itemDetails,'Mfr',{size:10},function(value) {
 		if (value == "") {
 		    alert("You cannot have a blank manufacturer name");
 		    return false;
@@ -67,13 +67,13 @@ function setItem(itemDetails) {
 	    }));
 
     // The itemBrand text field
-    tr.appendChild(textTd('item',itemDetails,'Brand',{size:10}));
+    tr.appendChild(field.textTd('item',itemDetails,'Brand',{size:10}));
 
     // The itemType text field
-    tr.appendChild(textTd('item',itemDetails,'Type',{size:10}));
+    tr.appendChild(field.textTd('item',itemDetails,'Type',{size:10}));
 
     // The itemDesc text field
-    tr.appendChild(textTd('item',itemDetails,'Desc',{},function(value) {
+    tr.appendChild(field.textTd('item',itemDetails,'Desc',{},function(value) {
 		if (value == "") {
 		    alert("You cannot have a blank item description");
 		    return false;
@@ -83,7 +83,7 @@ function setItem(itemDetails) {
 	    }));
 
     // The itemSize text field
-    tr.appendChild(textTd('item',itemDetails,'Size',{size:10}));
+    tr.appendChild(field.textTd('item',itemDetails,'Size',{size:10}));
 
     // itemTags select
     var tagsTd = document.createElement('td');

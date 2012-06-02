@@ -40,7 +40,7 @@ function setTag(tagDetails) {
     tr.tagId = tagDetails.tagId
 
     // Tag name textbox
-    tr.appendChild(textTd('tag',tagDetails,'Name',{},function(value) {
+    tr.appendChild(field.textTd('tag',tagDetails,'Name',{},function(value) {
 		if (value == "") {
 		    alert("You cannot have a blank tag name");
 		    return false;

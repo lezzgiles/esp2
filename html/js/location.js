@@ -40,7 +40,7 @@ function setLocation(locationDetails) {
     tr.locationId = locationDetails.locationId
 
     // Location name textbox
-    tr.appendChild(textTd('location',locationDetails,'Name',{},function(value) {
+    tr.appendChild(field.textTd('location',locationDetails,'Name',{},function(value) {
 		if (value == "") {
 		    alert("You cannot have an empty location name");
 		    return false;

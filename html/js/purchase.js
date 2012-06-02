@@ -29,41 +29,16 @@ function addPurchaseItemRow() {
     table.tBodies[0].appendChild(tr);
 
     // item select list
-    tr.appendChild(selectTd(null,null,'item','Select one',null));
+    tr.appendChild(field.selectTd(null,null,'item','Select one',null));
 
     // quantity
-    var quantityTd = document.createElement('td');
-
-    var quantityText = document.createElement('input');
-    quantityText.type = 'text';
-    quantityText.size = 5;
-    quantityText.value = '1';
-    quantityText.style.textAlign = 'right';
-    quantityText.onblur = calcTotals;
-    quantityTd.appendChild(quantityText);
-    tr.appendChild(quantityTd);
+    tr.appendChild(field.numberTd(null,null,null,{onblur:calcTotals});
 
     // cost
-    var costTd = document.createElement('td');
-    var costText = document.createElement('input');
-    costText.type = 'text';
-    costText.size = 5;
-    costText.value = '0.00';
-    costText.className = 'money';
-    costText.onblur = calcTotals;
-    costTd.appendChild(costText);
-    tr.appendChild(costTd);
+    tr.appendChild(field.moneyTd(0,{onblur:calcTotals});
 
     // total
-    var totalTd = document.createElement('td');
-    var totalText = document.createElement('input');
-    totalText.type = 'text';
-    totalText.size = 5;
-    totalText.value = '0.00';
-    totalText.className = 'money';
-    totalText.readOnly = true;
-    totalTd.appendChild(totalText);
-    tr.appendChild(totalTd);
+    tr.appendChild(field.moneyTd(0,{readOnly:true});
 
     // delete button
     var deleteTd = document.createElement('td');
@@ -145,7 +120,6 @@ function setPurchase(tranDetails) {
 		// We don't update transactions.
 		foundIt = true;
 	    }
-		    
 	});
 
     if (foundIt) { return; }
@@ -244,44 +218,11 @@ function popupPurchase(row) {
 	    var td;
 	    var input;
 
-	    td = document.createElement('td');
-	    input = document.createElement('input');
-	    input.type = 'text';
-	    input.readOnly = true;
-	    input.value = itemDetails.itemName;
-	    td.appendChild(input);
-	    tr.appendChild(td);
-
-	    td = document.createElement('td');
-	    input = document.createElement('input');
-	    input.type = 'text';
-	    input.size = 5;
-	    input.readOnly = true;
-	    input.style.textAlign = 'right';
-	    input.value = itemDetails.quantity;
-	    td.appendChild(input);
-	    tr.appendChild(td);
-
-	    td = document.createElement('td');
-	    input = document.createElement('input');
-	    input.type = 'text';
-	    input.size = 5;
-	    input.readOnly = true;
-	    input.style.textAlign = 'right';
-	    input.value = cents2dollars(itemDetails.price);
-	    td.appendChild(input);
-	    tr.appendChild(td);
-
-	    td = document.createElement('td');
-	    input = document.createElement('input');
-	    input.type = 'text';
-	    input.size = 5;
-	    input.readOnly = true;
-	    input.style.textAlign = 'right';
-	    input.value = cents2dollars(itemDetails.price*itemDetails.quantity);
+	    tr.appendChild(field.textTd(null,null,null,{readOnly:true,value:itemDetails.itemName}));
+	    tr.appendChild(field.numberTd(null,null,null,{readonly:true,value:itemDetails.quantity}));
+	    tr.appendChild(field.moneyTd(itemDetails.price,{readOnly:true}));
+	    tr.appendChild(field.moneyTd(itemDetails.price*itemDetails.quantity,{readOnly:true}));
 	    total += itemDetails.price*itemDetails.quantity;
-	    td.appendChild(input);
-	    tr.appendChild(td);
 
 	    table.appendChild(tr);
 	});
@@ -292,15 +233,7 @@ function popupPurchase(row) {
     td.style.textAlign = 'right';
     td.appendChild(document.createTextNode('Subtotal:'));
     tr.appendChild(td);
-    td = document.createElement('td');
-    input = document.createElement('input');
-    input.type = 'text';
-    input.size = 5;
-    input.readOnly = true;
-    input.style.textAlign = 'right';
-    input.value = cents2dollars(total);
-    td.appendChild(input);
-    tr.appendChild(td);
+    tr.appendChild(field.moneyTd(total,{readOnly:true}));
 
     tr = table.insertRow(-1);
     td = document.createElement('td');
@@ -308,16 +241,9 @@ function popupPurchase(row) {
     td.style.textAlign = 'right';
     td.appendChild(document.createTextNode('Shipping:'));
     tr.appendChild(td);
-    td = document.createElement('td');
-    input = document.createElement('input');
-    input.type = 'text';
-    input.size = 5;
-    input.readOnly = true;
-    input.style.textAlign = 'right';
-    input.value = cents2dollars(details.tranShipping);
-    total += details.tranShipping;
     td.appendChild(input);
-    tr.appendChild(td);
+    tr.appendChild(field.moneyTd(details.tranShipping,{readOnly:true});
+    total += details.tranShipping;
 
     tr = table.insertRow(-1);
     td = document.createElement('td');
@@ -325,16 +251,8 @@ function popupPurchase(row) {
     td.style.textAlign = 'right';
     td.appendChild(document.createTextNode('Tax:'));
     tr.appendChild(td);
-    td = document.createElement('td');
-    input = document.createElement('input');
-    input.type = 'text';
-    input.size = 5;
-    input.readOnly = true;
-    input.style.textAlign = 'right';
-    input.value = cents2dollars(details.tranTax);
+    tr.appendChild(field.moneyTd(details.tranTax,{readOnly:true});
     total += details.tranTax;
-    td.appendChild(input);
-    tr.appendChild(td);
     
     tr = table.insertRow(-1);
     td = document.createElement('td');
@@ -342,16 +260,8 @@ function popupPurchase(row) {
     td.style.textAlign = 'right';
     td.appendChild(document.createTextNode('Adjustments (e.g. rebates):'));
     tr.appendChild(td);
-    td = document.createElement('td');
-    input = document.createElement('input');
-    input.type = 'text';
-    input.size = 5;
-    input.readOnly = true;
-    input.style.textAlign = 'right';
-    input.value = cents2dollars(details.tranAdjustments);
+    tr.appendChild(field.moneyTd(details.tranAdjustments,{readOnly:true});
     total += details.tranAdjustments;
-    td.appendChild(input);
-    tr.appendChild(td);
 
     tr = table.insertRow(-1);
     td = document.createElement('td');
@@ -359,15 +269,7 @@ function popupPurchase(row) {
     td.style.textAlign = 'right';
     td.appendChild(document.createTextNode('Total:'));
     tr.appendChild(td);
-    td = document.createElement('td');
-    input = document.createElement('input');
-    input.type = 'text';
-    input.size = 5;
-    input.readOnly = true;
-    input.style.textAlign = 'right';
-    input.value = cents2dollars(total);
-    td.appendChild(input);
-    tr.appendChild(td);
+    tr.appendChild(field.moneyTd(total,{readOnly:true});
 
     popup.appendChild(table);
     popup.style.position = 'absolute';

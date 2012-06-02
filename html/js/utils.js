@@ -391,59 +391,7 @@ function blurOnReturnKey(evt) {
     if (evt.keyCode == 13) { node.blur(); return false;}
 }
 
-function textTd(type,details,field,attr,validate) {
-    var id = details[type+'Id'];
-    var value = details[type+field];
-    var textInput = document.createElement('input');
-    textInput.type = 'text';
-    textInput.value = value;
-    forEach (Object.keys(attr), function(a) { textInput[a] = attr[a] });
-    if (window.opener.userType == 0) {
-	textInput.disabled = true;
-    }
-    textInput.onkeyup = blurOnReturnKey;
-    textInput.onchange = function() {
-	if (validate && !validate(value)) { return }
-	var newDetails = {};
-	newDetails[type+'Id'] = id
-	newDetails[type+field] = this.value;
-	opener.esp.sendRequest('set'+type.capitalize()+field,newDetails,{});
-    };
-    var td = document.createElement('td');
-    td.appendChild(textInput);
-    td.setAttribute('sorttable_customkey', value);
-    return td;
-}
-
-function selectTd(type,details,field,text,value) {
-    var td = document.createElement('td');
-    var select = document.createElement('select');
-    select.className = 'listof='+field.toLowerCase();
-    select.disabled = (window.opener.userType == 0);
-    td.appendChild(select);
-    updateSelectTd(td,text,value);
-    if (type) {
-	var id = details[type+'Id'];
-	select.onchange = function() {
-	    var newDetails = {};
-	    newDetails[type+'Id'] = id;
-	    newDetails[field.toLowerCase()+'Id'] = this.options[this.selectedIndex].value;
-	    opener.esp.sendRequest('set'+type.capitalize()+field,newDetails);
-	};
-    }
-    listable.setupSelect(select,field.toLowerCase());
-    return td;
-}
-
-function updateSelectTd(td,text,value) {
-    var select = td.childNodes[0];
-    while (select.options.length > 0) { select.remove(0) }
-    var option = document.createElement('option');
-    option.text = text;
-    option.value = value;
-    select.add(option);
-}
-
+###############################################################################
 if (!Array.prototype.map)
 {
   Array.prototype.map = function(fun /*, thisp*/)
