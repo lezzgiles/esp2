@@ -17,11 +17,12 @@ esp = {
 	    });
     },
 
-    getAll: function(type) {
+    getAll: function(type,handlers) {
 	if (type in esp.db) {
 	    forEach (esp.db[type], function(details) { esp.tell(type,details) });
+	    
 	} else {
-	    esp.sendRequest('get',{type:type});
+	    esp.sendRequest('get',{type:type},handlers);
 	}
     },
 

@@ -21,18 +21,4 @@ MSelect = {
 	listable.setupMselect(mselect,field);
 	return mselect;
     },
-
-    update: function(mselect,values) {
-	mselect.value = values.map(function(pair) { return pair[0] }).join();
-	mselect.espValues = values;
-    },
-
-    // Return a list of ids that are selected, as a hash { id => true }
-    selectedValues: function(mselect) {
-	var selected = {};
-	if ('espValues' in mselect) {
-	    mselect.espValues.map(function(pair) { selected[pair[1]] = true });
-	}
-	return selected;
-    },
 }

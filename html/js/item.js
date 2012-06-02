@@ -42,7 +42,7 @@ function setItem(itemDetails) {
 		row.cells[2].childNodes[0].value = itemDetails.itemType;
 		row.cells[3].childNodes[0].value = itemDetails.itemDesc;
 		row.cells[4].childNodes[0].value = itemDetails.itemSize;
-		MSelect.update(row.cells[5].childNodes[0],itemDetails.itemTags);
+		listable.updateMselect(row.cells[5].childNodes[0],itemDetails.itemTags);
 		hiddenRows.showRow(row,row.cells[6],'item',itemDetails);
 	    }
 		    

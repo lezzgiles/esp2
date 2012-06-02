@@ -198,6 +198,14 @@ HTMLSelectElement.prototype.selectedValues = function() {
     return selected;
 }
 
+HTMLInputElement.prototype.selectedValues = function() {
+    var selected = {};
+    if ('espValues' in mselect) {
+	mselect.espValues.map(function(pair) { selected[pair[1]] = true });
+    }
+    return selected;
+}
+
 String.prototype.capitalize = function() {
     return this.charAt(0).toUpperCase() + this.slice(1);
 }
