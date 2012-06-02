@@ -312,6 +312,13 @@ HTTP.encodeFormData = function(data) {
     return pairs.join('&');
 }
 
+// Options can be:
+// - timeout: timeout in seconds
+// - timeoutHandler: handler called if there is a timeout
+// - errorHandler
+// - progressHandler
+// - parameters: data sent with request
+// - callback: handler called on success
 HTTP.get = function(url,callback,options) {
     var request = HTTP.newRequest();
     var n = 0;
@@ -347,10 +354,8 @@ HTTP.get = function(url,callback,options) {
 
 ////////////////////////////////////////////////////
 
-// Takes an optional argument, a dictionary of functions:
-// key success - called if successful
-// key error - called if error
-function doit (command,parameters) {
+// Sends a request, calls handler on success
+function doit (command,parameters,handler) {
     if (window.opener) {
 	database = window.opener.database;
 	username = window.opener.username;
@@ -368,56 +373,7 @@ function doit (command,parameters) {
 
     debug.write('Sending: '+JSON.stringify(parameters));
 
-    var myHandler;
-
-    if (arguments.length == 3) {
-	var handlerFuncs = arguments[2];
-	myHandler = function(results) {
-	    handleResults(results,handlerFuncs);
-	};
-    } else {
-	myHandler = handleResults;
-    }
-
-    HTTP.get("/esp-cgi/esp",myHandler,{parameters:parameters});
-}
-
-handle = {};
-
-function handleResults(results) {
-    debug.write('Response: '+results);
-    var retval = true;
-    var message;
-    if (results == null) {
-	message = "Request failed for an unknown reason";
-	retval = false;
-    } else {
-	results = JSON.parse(results);
-	forEach (results, function(result) {
-	    var command = result.shift();
-	    if (command == 'error') {
-		message = result[0];
-		retval = false;
-	    } else if (command in handle) {
-		handle[command](result[0]);
-	    } else {
-		message = "Internal error - got unexpected response "+command;
-		retval = false;
-	    }
-	});
-    }
-
-    if (retval) {
-	if (arguments.length == 2 && 'success' in arguments[1]) {
-	    arguments[1].success();
-	}
-    } else {
-	if (arguments.length == 2 && 'error' in arguments[1]) {
-	    arguments[1].error(message);
-	} else {
-	    alert(message);
-	}
-    }
+    HTTP.get("/esp-cgi/esp",handler,{parameters:parameters});
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -443,7 +399,7 @@ function textTd(type,details,field,attr,validate) {
 	var newDetails = {};
 	newDetails[type+'Id'] = id
 	newDetails[type+field] = this.value;
-	opener.doit('set'+type.capitalize()+field,newDetails,{});
+	opener.esp.sendRequest('set'+type.capitalize()+field,newDetails,{});
     };
     var td = document.createElement('td');
     td.appendChild(textInput);
@@ -464,7 +420,7 @@ function selectTd(type,details,field,text,value) {
 	    var newDetails = {};
 	    newDetails[type+'Id'] = id;
 	    newDetails[field.toLowerCase()+'Id'] = this.options[this.selectedIndex].value;
-	    opener.doit('set'+type.capitalize()+field,newDetails,{});
+	    opener.esp.sendRequest('set'+type.capitalize()+field,newDetails);
 	};
     }
     listable.setupSelect(select,field.toLowerCase());

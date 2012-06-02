@@ -5,7 +5,7 @@ function addTag() {
     if (tagName == "") {
 	alert("You must enter a name for the new tag");
     } else {
-	opener.addTag({tagName:tagName}, {
+	opener.esp.sendRequest('addTag',{tagName:tagName}, {
 	    success:function() {
 	        document.getElementById('tagName').value = "";
 	        document.getElementById('tagName').focus();
@@ -67,7 +67,7 @@ window.onload = function () {
     document.getElementById('tagName').onchange = addTag;
     document.getElementById('tagName').onkeyup = blurOnReturnKey;
     document.getElementById('tagTable').setRow = setTag;
-    opener.getTags();
+    opener.esp.getAll('tag');
     hiddenRows.init();
 }
 

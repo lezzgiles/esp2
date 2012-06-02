@@ -14,7 +14,7 @@ function clickChangePassword() {
 	return;
     }
 
-    opener.opener.setUserPassword({userId:changeUserId,newPassword:newPassword},{
+    opener.opener.esp.sendRequest('setUserPassword',{userId:changeUserId,newPassword:newPassword},{
 	    success: function() { window.close(); },
 	    error: function(msg) { alert(msg); },
 	});

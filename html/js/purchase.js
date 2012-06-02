@@ -116,7 +116,7 @@ function addPurchaseSubmit() {
 	details.items.push(item);
     }
     
-    opener.addPurchase(details, {
+    opener.esp.sendRequest('addPurchase',details, {
 	    success: function() {
 		document.getElementById('seller').value = "";
 		document.getElementById('tax').value = '0.00';
@@ -387,7 +387,7 @@ window.onload = function() {
     document.getElementById('addPurchaseSubmit').onclick = addPurchaseSubmit;
     document.getElementById('purchaseTable').setRow = setPurchase;
     addPurchaseItemRow();
-    opener.getPurchases();
+    opener.esp.getAll('tran');
 }
 
 window.onunload = function() {

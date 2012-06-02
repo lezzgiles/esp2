@@ -13,13 +13,13 @@ function addUser() {
 	alert("Passwords do not match");
 	return;
     } else {
-	opener.addUser({newName:userName,newPassword:userPassword,newType:userType},{});
+	opener.esp.sendRequest('addUser',{newName:userName,newPassword:userPassword,newType:userType},{});
     }
 }
 
 function setUserType(id) {
     return function() {
-	opener.setUserType({userId:id,userType:this.options[this.selectedIndex].value},{});
+	opener.esp.sendRequest('setUserType',{userId:id,userType:this.options[this.selectedIndex].value},{});
 	return false;
     }
 }
@@ -111,14 +111,6 @@ function setUser(userDetails) {
 }
 
 handle = {
-    binIncoming: function(binIncomingDetails) {
-	var option = document.createElement('option');
-	option.text = binIncomingDetails.binName;
-	option.value = binIncomingDetails.binId;
-	var select = document.getElementById('binIncoming');
-	select.add(option);
-	select.expanded = false;
-    },
 }
 
 // Set up the page after the html is fully loaded
@@ -128,10 +120,19 @@ window.onload = function () {
     document.getElementById('binIncoming').onchange = function(event) {
 	doit('setBinIncoming',{binId:event.target.options[event.target.selectedIndex].value},{});
     };
-    opener.getUsers();
+    opener.esp.getAll('user');
     hiddenRows.init();
     listable.init();
-    doit('getBinIncoming',{},{});
+    opener.esp.sendRequest('getBinIncoming',{},{
+	    binIncoming: function(binIncomingDetails) {
+		var option = document.createElement('option');
+		option.text = binIncomingDetails.binName;
+		option.value = binIncomingDetails.binId;
+		var select = document.getElementById('binIncoming');
+		select.add(option);
+		select.expanded = false;
+	    },
+		});
 }
 
 window.onunload = function () {

@@ -19,7 +19,7 @@ function clickChangePassword() {
 	return;
     }
     
-    opener.changeMyPassword({oldPassword:oldPassword,newPassword:newPassword},{
+    opener.esp.sendRequest('changeMyPassword',{oldPassword:oldPassword,newPassword:newPassword},{
 	    success: function() { window.close(); },
 	    error: function(msg) { alert(msg); },
 	});

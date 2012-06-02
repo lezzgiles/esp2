@@ -5,7 +5,7 @@ function addLocation() {
     if (locationName == "") {
 	alert("You must enter a name for the new location");
     } else {
-	opener.addLocation({locationName:locationName}, {
+	opener.esp.sendRequest('addLocation',{locationName:locationName}, {
 	    success:function() {
 	        document.getElementById('locationName').value = "";
 	        document.getElementById('locationName').focus();
@@ -67,7 +67,7 @@ window.onload = function () {
     document.getElementById('locationName').onchange = addLocation;
     document.getElementById('locationName').onkeyup = blurOnReturnKey;
     document.getElementById('locationTable').setRow = setLocation;
-    opener.getLocations();
+    opener.esp.getAll('location');
     hiddenRows.init();
 }
 

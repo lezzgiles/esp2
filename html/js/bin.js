@@ -10,7 +10,7 @@ function addBin() {
     } else if (binSlots == "") {
 	alert("You must enter the number of items that can be stored in the new bin.  Enter 0 for no limit.");
     } else {
-	opener.addBin({binName:binName,binSlots:binSlots,locationId:binLocation}, {
+	opener.esp.sendRequest('addBin',{binName:binName,binSlots:binSlots,locationId:binLocation}, {
 		success:function() {
 		    document.getElementById('binName').value = "";
 		    document.getElementById('binName').focus();
@@ -96,7 +96,7 @@ window.onload = function () {
     }
     document.getElementById('addBinSubmit').onclick = addBin;
     document.getElementById('binTable').setRow = setBin;
-    opener.getBins();
+    opener.esp.getAll('bin');
     hiddenRows.init();
     listable.init();
 }

@@ -47,7 +47,7 @@ hiddenRows = {
 	    hiddenCheckbox.disabled = true;
 	}
 	hiddenCheckbox.onclick = function() {
-	    opener.doit('setHidden',{type:type,id:id,hidden:this.checked?1:0},{});
+	    opener.esp.sendRequest('setHidden',{type:type,id:id,hidden:this.checked?1:0},{});
 	    return false;
 	};
 

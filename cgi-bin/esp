@@ -396,7 +396,7 @@ eval {
 	if ($type <= READONLY) { push @returns, ['error','You do not have permission to do this']; return }
 
 	my $itemId = $postdata->{itemId};
-	my $fieldValue = $postdata->{fieldName};
+	my $fieldValue = $postdata->{$fieldName};
 
 	$dbh->do("UPDATE item SET $fieldName = ? WHERE itemId = ?",undef,$fieldValue,$itemId);
 	$dbh->commit;
@@ -450,7 +450,7 @@ eval {
 	$dbh->commit;
 	push @returns, details($dbh,'tran',$tranId);
 
-    } elsif ($command eq 'get' and $objectType eq 'purchase') {
+    } elsif ($command eq 'get' and $objectType eq 'tran') {
 	my $sth = $dbh->prepare("SELECT tranId,userId,trantypeName AS tranType,tranParty,tranDate,tranTax,tranShipping,tranAdjustments,tranInvoice,tranTracking,tranPicklist,binId FROM tran LEFT JOIN trantype USING(trantypeId)");
 	$sth->execute;
 	while (my $details = $sth->fetchrow_hashref) {

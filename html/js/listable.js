@@ -36,7 +36,7 @@ listable = {
 	};
     },
     expandList: function(select,type) {
-	if (type in opener.esp) {
+	if (type in opener.esp.db) {
 	    // Save the current option values so they can be restored after
 	    // recreating the options.
 	    var selectedValues = select.selectedValues();
@@ -45,7 +45,7 @@ listable = {
 	    while (select.options.length > 0) { select.remove(0); }
 
 	    var firstOption = null;
-	    forEach(opener.esp[type],function(details) {
+	    forEach(opener.esp.db[type],function(details) {
 		    if (details[type+'Hidden'] == 0) {
 			var option = document.createElement('option');
 			option.text = details[type+'Name'];
@@ -57,8 +57,8 @@ listable = {
 		});
 
 	} else {
-	    opener.esp[type] = {};
-	    opener.doit('get',{type:type},{
+	    opener.esp.db[type] = [];
+	    opener.esp.sendRequest('get',{type:type},{
 		    success: function() {
 			listable.expandList(select,type);
 		    },
@@ -71,7 +71,7 @@ listable = {
 	}
     },
     expandMlist: function(mselect,type) {
-	if (type in opener.esp) {
+	if (type in opener.esp.db) {
 	    // Save the current option values so they can be restored after
 	    // recreating the options.
 	    var selectedValues = MSelect.selectedValues(mselect);
@@ -81,7 +81,7 @@ listable = {
 	    popup.style.border = 'solid black 1px';
 	    popup.style.padding = '5px';
 	    popup.style.textAlign = 'justify';
-	    forEach (opener.esp[type],function(details) {
+	    forEach (opener.esp.db[type],function(details) {
 		    if (details[type+'Hidden'] == 0) {
 			var label = document.createElement('label');
 			var checkbox = document.createElement('input');
@@ -118,7 +118,7 @@ listable = {
 				newDetails[mselect.espFieldName].push(label.childNodes[0].value);
 			    }
 			});
-		    opener.doit('set'+mselect.espFieldName.capitalize(),newDetails,{});
+		    opener.esp.sendRequest('set'+mselect.espFieldName.capitalize(),newDetails);
 		} else {
 		    // This is a list of things for a new item
 		    names = Array();
@@ -135,8 +135,8 @@ listable = {
 	    }
 	    document.body.appendChild(popup);
 	} else {
-	    opener.esp[type] = {};
-	    opener.doit('get',{type:type},{
+	    opener.esp.db[type] = [];
+	    opener.esp.sendRequest('get',{type:type},{
 		    success: function() {
 			listable.expandMlist(mselect,type);
 		    },

@@ -18,14 +18,14 @@ function addItem() {
 	alert("You must enter a description for the new item");
 	return;
     } else {
-	opener.addItem({newMfr:itemMfr,newBrand:itemBrand,newDesc:itemDesc,newSize:itemSize,newType:itemType,newTags:itemTags},{});
+	opener.esp.sendRequest('addItem',{newMfr:itemMfr,newBrand:itemBrand,newDesc:itemDesc,newSize:itemSize,newType:itemType,newTags:itemTags},{});
     }
 }
 
 function setItemTags(id) {
     return function() {
 	var itemTags = Object.keys(this.selectedValues()).join();
-	opener.setItemTags({itemId:id,itemTags:itemTags},{});
+	opener.esp.sendRequest('setItemTags',{itemId:id,itemTags:itemTags},{});
     }
 }
 
@@ -103,7 +103,7 @@ function setItem(itemDetails) {
 window.onload = function () {
     document.getElementById('addItemSubmit').onclick = addItem;
     document.getElementById('itemTable').setRow = setItem;
-    opener.getItems();
+    opener.esp.getAll('item');
     hiddenRows.init();
     listable.init();
 }
