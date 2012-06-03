@@ -86,9 +86,7 @@ function setItem(itemDetails) {
     tr.appendChild(field.textTd('item',itemDetails,'Size',{size:10}));
 
     // itemTags select
-    var tagsTd = document.createElement('td');
-    tagsTd.appendChild(MSelect.mselect('item',itemDetails,'tag',{}));
-    tr.appendChild(tagsTd);
+    tr.appendChild(field.mselectTd('item',itemDetails,'tag',{}));
 
     // The hidden checkbox
     tr.appendChild(hiddenRows.checkboxTd(tr,'item',itemDetails));

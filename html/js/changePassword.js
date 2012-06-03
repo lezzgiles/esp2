@@ -15,14 +15,9 @@ function clickChangePassword() {
     }
 
     opener.opener.esp.sendRequest('setUserPassword',{userId:changeUserId,newPassword:newPassword},{
-	    success: function() { window.close(); },
+	    success: function() { alert("Password changed"); window.close(); },
 	    error: function(msg) { alert(msg); },
 	});
-}
-
-handle.changePassword = function(changeUsername) {
-    alert("Password changed");
-    window.close();
 }
 
 // Set up the page after the html is fully loaded

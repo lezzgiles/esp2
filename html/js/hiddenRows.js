@@ -11,9 +11,8 @@ hiddenRows = {
     },
     hide: function(checkbox,table) {
         var showHidden = checkbox.checked;
-	var tbody = table.tBodies[0];
 
-	forEach (tbody.rows, function(tr) {
+	forEach (table.tBodies[0].rows, function(tr) {
 	    if (showHidden) {
 		tr.style.display = 'table-row';
 	    } else {

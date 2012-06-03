@@ -110,9 +110,6 @@ function setUser(userDetails) {
     clearSorted(document.getElementById('userTable'));
 }
 
-handle = {
-}
-
 // Set up the page after the html is fully loaded
 window.onload = function () {
     document.getElementById('addUserSubmit').onclick = addUser;

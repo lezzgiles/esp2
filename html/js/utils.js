@@ -1,4 +1,7 @@
 // General utilities
+
+///////////////////////////////////////////////////////////////////////////////
+// Money formatting
 function moneyFormat(textObj) {
    var newValue = textObj.value;
    var decAmount = "";
@@ -114,6 +117,7 @@ function cents2dollars(value)
     return (value/100).toFixed(2);
 }
 
+///////////////////////////////////////////////////////////////////////////////
 function incdec(inc,incMax,dec)
 {
     incField = document.getElementById(inc);
@@ -180,15 +184,7 @@ function incIncDecField(id,max,inc2,dec)
     return retval;
 }
 
-function checkField(fieldName,msg)
-{
-     var field = document.getElementById(fieldName);
-     if (field.value == "") {
-         alert(msg);
-         return false;
-     }
-     return true;
-}
+///////////////////////////////////////////////////////////////////////////////
 
 HTMLSelectElement.prototype.selectedValues = function() {
     var selected = {};
@@ -210,11 +206,16 @@ String.prototype.capitalize = function() {
     return this.charAt(0).toUpperCase() + this.slice(1);
 }
 
+// Stop the return key from submitting a form.  Probably not necessary
+// in this version of esp since there are no forms, but keep anyway.
 function stopRKey(evt) {
    var evt = (evt) ? evt : ((event) ? event : null);
    var node = (evt.target) ? evt.target : ((evt.srcElement) ? evt.srcElement : null);
    if ((evt.keyCode == 13) && (node.type=="text")) {return false;}
 }
+document.onkeypress = stopRKey;
+
+///////////////////////////////////////////////////////////////////////////////
 
 // copyright 1999 Idocs, Inc. http://www.idocs.com
 // Distribute this script freely but keep this notice in place
@@ -249,8 +250,6 @@ else if (dec && (keychar == "."))
 else
    return false;
 }
-
-document.onkeypress = stopRKey;
 
 ////////////////////////////////////////////////////
 // Ajax stuff
@@ -391,7 +390,9 @@ function blurOnReturnKey(evt) {
     if (evt.keyCode == 13) { node.blur(); return false;}
 }
 
-###############################################################################
+///////////////////////////////////////////////////////////////////////////////
+// Add map() to Array
+
 if (!Array.prototype.map)
 {
   Array.prototype.map = function(fun /*, thisp*/)
@@ -412,7 +413,9 @@ if (!Array.prototype.map)
   };
 }
 
-  function findPosX(obj)
+///////////////////////////////////////////////////////////////////////////////
+// find x and y coordinates of current HTML element
+function findPosX(obj)
   {
     var curleft = 0;
     if(obj.offsetParent)

@@ -32,13 +32,13 @@ function addPurchaseItemRow() {
     tr.appendChild(field.selectTd(null,null,'item','Select one',null));
 
     // quantity
-    tr.appendChild(field.numberTd(null,null,null,{onblur:calcTotals});
+    tr.appendChild(field.numberTd(null,null,null,{onblur:calcTotals}));
 
     // cost
-    tr.appendChild(field.moneyTd(0,{onblur:calcTotals});
+    tr.appendChild(field.moneyTd(0,{onblur:calcTotals}));
 
     // total
-    tr.appendChild(field.moneyTd(0,{readOnly:true});
+    tr.appendChild(field.moneyTd(0,{readOnly:true}));
 
     // delete button
     var deleteTd = document.createElement('td');
@@ -242,7 +242,7 @@ function popupPurchase(row) {
     td.appendChild(document.createTextNode('Shipping:'));
     tr.appendChild(td);
     td.appendChild(input);
-    tr.appendChild(field.moneyTd(details.tranShipping,{readOnly:true});
+    tr.appendChild(field.moneyTd(details.tranShipping,{readOnly:true}));
     total += details.tranShipping;
 
     tr = table.insertRow(-1);
@@ -251,7 +251,7 @@ function popupPurchase(row) {
     td.style.textAlign = 'right';
     td.appendChild(document.createTextNode('Tax:'));
     tr.appendChild(td);
-    tr.appendChild(field.moneyTd(details.tranTax,{readOnly:true});
+    tr.appendChild(field.moneyTd(details.tranTax,{readOnly:true}));
     total += details.tranTax;
     
     tr = table.insertRow(-1);
@@ -260,7 +260,7 @@ function popupPurchase(row) {
     td.style.textAlign = 'right';
     td.appendChild(document.createTextNode('Adjustments (e.g. rebates):'));
     tr.appendChild(td);
-    tr.appendChild(field.moneyTd(details.tranAdjustments,{readOnly:true});
+    tr.appendChild(field.moneyTd(details.tranAdjustments,{readOnly:true}));
     total += details.tranAdjustments;
 
     tr = table.insertRow(-1);
@@ -269,7 +269,7 @@ function popupPurchase(row) {
     td.style.textAlign = 'right';
     td.appendChild(document.createTextNode('Total:'));
     tr.appendChild(td);
-    tr.appendChild(field.moneyTd(total,{readOnly:true});
+    tr.appendChild(field.moneyTd(total,{readOnly:true}));
 
     popup.appendChild(table);
     popup.style.position = 'absolute';

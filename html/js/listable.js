@@ -128,7 +128,7 @@ listable = {
 			    document.body.removeChild(popup);
 			};
 			document.body.appendChild(popup);
-		    };
+		    },
 		});
 	};
     },
