@@ -68,27 +68,31 @@ listable = {
 		    success: function() {
 			// Save the current option values so they can be restored after
 			// recreating the options.
-			var selectedValues = this.selectedValues()
+			var selectedValues = mselect.selectedValues()
 
 			var popup = document.createElement('div');
 			popup.style.background = '#d0d0ff';
 			popup.style.border = 'solid black 1px';
 			popup.style.padding = '5px';
 			popup.style.textAlign = 'justify';
-			forEach (opener.esp.db[type],function(details) {
-				if (details[type+'Hidden'] == 0) {
-				    var label = document.createElement('label');
-				    var checkbox = document.createElement('input');
-				    checkbox.type = 'checkbox';
-				    checkbox.value = details[type+'Id'];
-				    checkbox.checked = (checkbox.value in selectedValues);
-				    label.appendChild(checkbox);
-				    label.appendChild(document.createTextNode(details[type+'Name']));
-				    popup.appendChild(label);
-				    popup.appendChild(document.createElement('br'));
-				}
-			    });
-			
+			if (opener.esp.db[type].length > 0) {
+			    forEach (opener.esp.db[type],function(details) {
+				    if (details[type+'Hidden'] == 0) {
+					var label = document.createElement('label');
+					var checkbox = document.createElement('input');
+					checkbox.type = 'checkbox';
+					checkbox.value = details[type+'Id'];
+					checkbox.checked = (checkbox.value in selectedValues);
+					label.appendChild(checkbox);
+					label.appendChild(document.createTextNode(details[type+'Name']));
+					popup.appendChild(label);
+					popup.appendChild(document.createElement('br'));
+				    }
+				});
+			} else {
+			    popup.appendChild(document.createTextNode('No tags defined'));
+			}
+
 			popup.style.position = 'absolute';
 			popup.style.top = findPosY(mselect)+mselect.scrollHeight;
 			popup.style.left = findPosX(mselect);

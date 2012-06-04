@@ -35,6 +35,7 @@ field = {
 	option.text = text;
 	option.value = value;
 	select.add(option);
+	td.setAttribute('sorttable_customkey', text);
     },
     selectTd: function(type,details,fieldname,text,value) {
 	var td = document.createElement('td');
@@ -51,6 +52,7 @@ field = {
 		newDetails[fieldname.toLowerCase()+'Id'] = this.options[this.selectedIndex].value;
 		opener.esp.sendRequest('set'+type.capitalize()+fieldname,newDetails);
 	    };
+	    td.setAttribute('sorttable_customkey', text);
 	}
 	listable.setupSelect(select,fieldname.toLowerCase());
 	return td;
@@ -60,11 +62,12 @@ field = {
 	var id = details[type+'Id'];
 	var fieldName = type+fieldname.capitalize()+'s';
 	var mselect = document.createElement('input');
-	mselect.type = 'input';
+	mselect.type = 'text';
+	mselect.readOnly = true;
 	mselect.className = 'listof='+fieldname;
 	mselect.disabled = (window.opener.userType == 0);
 	forEach (Object.keys(attrs), function(a) { mselect[a] = attrs[a] });
-	MSelect.update(mselect,details[fieldName]);
+	listable.updateMselect(mselect,details[fieldName]);
 	mselect.espValues = details[fieldName];
 	mselect.espType = type
 	mselect.espId = id;
@@ -75,7 +78,7 @@ field = {
 
     mselectTd: function(type,details,fieldname,attrs) {
 	var td = document.createElement('td');
-	td.appendChild(fieldname.mselect(type,details,fieldname,attrs));
+	td.appendChild(field.mselect(type,details,fieldname,attrs));
 	return td;
     },
     moneyTd: function(value,attr) {

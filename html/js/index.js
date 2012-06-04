@@ -20,8 +20,9 @@ esp = {
     getAll: function(type,handlers) {
 	if (type in esp.db) {
 	    forEach (esp.db[type], function(details) { esp.tell(type,details) });
-	    
+	    if (handlers && 'success' in handlers) handlers.success();
 	} else {
+	    esp.db[type] = [];
 	    esp.sendRequest('get',{type:type},handlers);
 	}
     },
@@ -49,9 +50,8 @@ esp = {
 				message = result[0];
 				retval = false;
 			    } else if (command in handlers) {
-				handlers[command](results);
+				handlers[command](result[0]);
 			    } else if (command in esp.types) {
-				if (!(command in esp.db)) esp.db[command] = [];
 				esp.db[command].push(result[0]);
 				esp.tell(command,result[0]);
 			    } else {

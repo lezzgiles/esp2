@@ -196,8 +196,8 @@ HTMLSelectElement.prototype.selectedValues = function() {
 
 HTMLInputElement.prototype.selectedValues = function() {
     var selected = {};
-    if ('espValues' in mselect) {
-	mselect.espValues.map(function(pair) { selected[pair[1]] = true });
+    if ('espValues' in this) {
+	this.espValues.map(function(pair) { selected[pair[1]] = true });
     }
     return selected;
 }

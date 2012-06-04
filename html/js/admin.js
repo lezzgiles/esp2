@@ -125,6 +125,7 @@ window.onload = function () {
 		var option = document.createElement('option');
 		option.text = binIncomingDetails.binName;
 		option.value = binIncomingDetails.binId;
+		option.selected = true;
 		var select = document.getElementById('binIncoming');
 		select.add(option);
 		select.expanded = false;
