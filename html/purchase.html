@@ -40,7 +40,14 @@ ESP: Purchase
 <input type="button" value='Add new purchase' id="addPurchaseSubmit">
 </fieldset>
 </form>
-<table border=1 name="tranTable" id="purchaseTable" class="listthings sortable">
+Show <input type="text" size="5" id="purchaseTableSize" value="100" style="text-align:right" /> entries.
+<input type="button" id="purchaseTableFirst" value="First"/>
+<input type="button" id="purchaseTablePrev" value="Prev"/>
+<input type="button" id="purchaseTableNext" value="Next"/>
+<input type="button" id="purchaseTableLast" value="Last"/>
+<br />
+<output id="purchaseTablePage"></output>
+<table border=1 name="tranTable" id="purchaseTable" class="listthings sortable someof=tran">
 <thead>
 <tr>
   <th id="purchaseDateHeader">Date</th>

@@ -108,80 +108,6 @@ function addPurchaseSubmit() {
 		});
 }
 
-function setPurchase(tranDetails) {
-    // Ignore if this is not a purchase
-    if (tranDetails.tranType != 'Purchase') return;
-
-    // Look to see if this bin is already in the table
-    var foundIt = false;
-    forEach(this.rows,function(row) {
-	    if (row.tranId == tranDetails.tranId) {
-		// This is the correct row, so nothing needs to be done.
-		// We don't update transactions.
-		foundIt = true;
-	    }
-	});
-
-    if (foundIt) { return; }
-
-    // Add the transaction to the top of the table
-    var tbody = this.tBodies[0];
-    var tr = document.createElement('tr');
-    tr.tranId = tranDetails.tranId;
-    tr.espDetails = tranDetails;
-    
-    // Simple table - no need to make anything modifiable
-
-    // Date
-    var td = document.createElement('td');
-    // Convert the datetime to a local datetime
-    // A date/time as returned by sqlite is YYYY-MM-DD hh:mm:ss
-    // This is a string that contains six numbers, so do a regex match
-    var t = tranDetails.tranDate.match(/[0-9]+/g);
-    var d = new Date();
-    d.setUTCFullYear(t[0]);
-    d.setUTCMonth(t[1]-1);
-    d.setUTCDate(t[2]);
-    d.setUTCHours(t[3]);
-    d.setUTCMinutes(t[4]);
-    d.setUTCSeconds(t[5]);
-    td.appendChild(document.createTextNode(d.toLocaleString()));
-    tr.appendChild(td);
-
-    // Seller
-    td = document.createElement('td');
-    td.appendChild(document.createTextNode(tranDetails.tranParty));
-    tr.appendChild(td);
-
-    // Cost
-    td = document.createElement('td');
-    // Add up all the costs
-    var total = 0;
-    total += tranDetails.tranShipping;
-    total += tranDetails.tranTax;
-    total += tranDetails.tranAdjustments;
-    forEach(tranDetails.itemDetails, function(item) {
-	    total += item.quantity*item.price;
-	});
-    td.appendChild(document.createTextNode(cents2dollars(total)));
-    tr.appendChild(td);
-
-    // Set up the timer for the purchase popup
-    var popupTimer;
-    tr.onmouseover = function() {
-	popupTimer=setTimeout(function() { popupPurchase(tr) },1000);
-    };
-    tr.onmousemove = function() {
-	clearTimeout(popupTimer);
-	popupTimer=setTimeout(function() { popupPurchase(tr) },1000);
-    };
-    tr.onmouseout = function() {
-	clearTimeout(popupTimer);
-    };
-
-    tbody.insertBefore(tr,tbody.firstChild);
-}
-
 function popupPurchase(row) {
     var details = row.espDetails;
     var popup = document.createElement('div');
@@ -281,15 +207,138 @@ function popupPurchase(row) {
     document.body.appendChild(popup);
 }
 
+// fillTable() is called when the list of transactions changes.
+// It should modify the table so that it contains the correct
+// set.  It shouldn't gratuitiously delete all the rows and
+// recreate them.
+// It should also make sure the navigation div is properly
+// filled in.
+// Can assume the list of transactions is sorted.
+var purchaseTablePage = 0;
+function fillTable() {
+    var tbody = document.getElementById('purchaseTable').tBodies[0];
+    var size = document.getElementById('purchaseTableSize').value;
+    var purchaseTablePageOutput = document.getElementById('purchaseTablePage');
+    
+    var first = purchaseTablePage*size;
+    var last = purchaseTablePage*(size+1)-1;
+    var list = opener.esp.db.tran;
+
+    // Clear the table
+    while(tbody.rows.length != 0) tbody.deleteRow(0);
+
+    // Find the purchases by skipping over the previous pages,
+    // then grabbing the next <size> purchases.  Then continue
+    // to the end to find the total number.
+    var i = 0;
+    var purchaseCount = 0;
+    var listPurchases = [];
+    while (i < list.length) {
+	if (list[i].tranType == 'Purchase') {
+	    purchaseCount++;
+	    if (purchaseCount > first && listPurchases.length < size) {
+		listPurchases.push(list[i]);
+	    }
+	}
+	i++;
+    }
+
+    // Display the purchases
+    forEach (listPurchases, function(details) {
+	    addRow(tbody,details);
+	});
+
+    // Update the status line and disable any buttons that are useless
+    var last = first + listPurchases.length;   // (index of the last) + 1
+
+    purchaseTablePageOutput.value = "Showing purchases "+(first+1)+" to "+last+" of "+purchaseCount;
+
+    // Disable the 'first' and 'prev' buttons if we are showing the first purchase
+    document.getElementById('purchaseTableFirst').disabled = (first == 0);
+    document.getElementById('purchaseTablePrev').disabled = (first == 0);
+
+    // Disable the 'next' and 'last' buttons if we are showing the last purchase
+    document.getElementById('purchaseTableNext').disabled = (last == list.length);
+    document.getElementById('purchaseTableLast').disabled = (last == list.length);
+
+    // Set the definition of the last button, which depends on the number of transactions
+    document.getElementById('purchaseTableLast').onclick = function() {
+	purchaseTablePage=Math.floor(list.length/size);
+	fillTable();
+    };
+    
+}
+
+function addRow(tbody,details) {
+    var tr = tbody.insertRow(-1);
+    tr.tranId = details.tranId;
+    tr.espDetails = details;
+    
+    // Date
+    var td = document.createElement('td');
+    // Convert the datetime to a local datetime
+    // A date/time as returned by sqlite is YYYY-MM-DD hh:mm:ss
+    // This is a string that contains six numbers, so do a regex match
+    var t = details.tranDate.match(/[0-9]+/g);
+    var d = new Date();
+    d.setUTCFullYear(t[0]);
+    d.setUTCMonth(t[1]-1);
+    d.setUTCDate(t[2]);
+    d.setUTCHours(t[3]);
+    d.setUTCMinutes(t[4]);
+    d.setUTCSeconds(t[5]);
+    td.appendChild(document.createTextNode(d.toLocaleString()));
+    tr.appendChild(td);
+
+    // Seller
+    td = document.createElement('td');
+    td.appendChild(document.createTextNode(details.tranParty));
+    tr.appendChild(td);
+
+    // Cost
+    td = document.createElement('td');
+    // Add up all the costs
+    var total = 0;
+    total += details.tranShipping;
+    total += details.tranTax;
+    total += details.tranAdjustments;
+    forEach(details.itemDetails, function(item) {
+	    total += item.quantity*item.price;
+	});
+    td.appendChild(document.createTextNode(cents2dollars(total)));
+    tr.appendChild(td);
+    
+    // Set up the timer for the purchase popup
+    var popupTimer;
+    tr.onmouseover = function() {
+	popupTimer=setTimeout(function() { popupPurchase(tr) },1000);
+    };
+    tr.onmousemove = function() {
+	clearTimeout(popupTimer);
+	popupTimer=setTimeout(function() { popupPurchase(tr) },1000);
+    };
+    tr.onmouseout = function() {
+	clearTimeout(popupTimer);
+    };
+		    
+    //tbody.insertBefore(tr,tbody.rows[0]);
+}
+
 window.onload = function() {
     document.getElementById('shipping').onblur = calcTotals;
     document.getElementById('tax').onblur = calcTotals;
     document.getElementById('adjustments').onblur = calcTotals;
     document.getElementById('addAnother').onclick = addPurchaseItemRow;
     document.getElementById('addPurchaseSubmit').onclick = addPurchaseSubmit;
-    document.getElementById('purchaseTable').setRow = setPurchase;
+
+    document.getElementById('purchaseTableFirst').onclick = function() { purchaseTablePage=0; fillTable(); };
+    document.getElementById('purchaseTablePrev').onclick = function() { purchaseTablePage--; fillTable(); };
+    document.getElementById('purchaseTableNext').onclick = function() { purchaseTablePage++; fillTable(); };
+
+    document.getElementById('purchaseTableSize').onchange = fillTable;
+    document.getElementById('purchaseTable').setRow = function() { };
     addPurchaseItemRow();
-    opener.esp.getAll('tran');
+    opener.esp.getAll('tran', { success: fillTable });
 }
 
 window.onunload = function() {
